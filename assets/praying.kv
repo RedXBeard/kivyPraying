@@ -1,0 +1,183 @@
+#:import get_color_from_hex kivy.utils.get_color_from_hex
+
+<Label>
+    canvas.before:
+        Rectangle:
+            pos: self.pos[0], self.pos[1]+sp(25)/2
+            size: self.size[0], self.size[1]-sp(25)
+        Rectangle:
+            pos: self.pos[0]+sp(25)/2, self.pos[1]
+            size: self.size[0]-sp(25), self.size[1]
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0], self.pos[1]
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0], self.pos[1]+self.height-sp(25)
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0]+self.width-sp(25), self.pos[1]
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0]+self.width-sp(25), self.pos[1]+self.height-sp(25)
+    padding: 20, 15
+    size_hint_y: None
+    text_size: self.size
+    line_height: 1.5
+    markup: True
+    halign: 'left'
+    valign: 'top'
+    color: get_color_from_hex('#000000')
+    height: sp(40)
+    font_size: sp(20)
+
+<CheckBox>
+    canvas.before:
+        Rectangle:
+            pos: self.pos[0], self.pos[1]+sp(25)/2
+            size: self.size[0], self.size[1]-sp(25)
+        Rectangle:
+            pos: self.pos[0]+sp(25)/2, self.pos[1]
+            size: self.size[0]-sp(25), self.size[1]
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0], self.pos[1]
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0], self.pos[1]+self.height-sp(25)
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0]+self.width-sp(25), self.pos[1]
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0]+self.width-sp(25), self.pos[1]+self.height-sp(25)
+
+<GridLayout>
+    spacing: 15, 15
+
+<Praying>
+    entrance: entrance
+
+    Screen:
+        id: entrance
+        name: 'entrance'
+        times: times
+        today: today
+
+        sabah: sabah
+        ogle: ogle
+        ikindi: ikindi
+        aksam: aksam
+        yatsi: yatsi
+        vitr: vitr
+
+        GridLayout:
+            cols: 1
+            rows: 2
+
+            padding: 15, 15, 15, 15
+            spacing: sp(40), sp(40)
+
+            Label:
+                id: today
+                name: 'today'
+                halign: 'center'
+
+            GridLayout:
+                id: times
+                name: 'times'
+
+                cols: 2
+                rows: 3
+
+                spacing: sp(20), sp(20)
+
+                GridLayout:
+                    cols: 2
+                    rows: 1
+                    spacing: sp(-20), sp(0)
+                    size_hint_y: None
+                    height: sp(40)
+                    Label:
+                        text: 'Sabah'
+                    PrayedCheckBox:
+                        id: sabah
+                        name: 'sabah'
+                        size_hint: None, None
+                        height: sp(40)
+                        width: sp(80)
+
+                GridLayout:
+                    cols: 2
+                    rows: 1
+                    spacing: sp(-20), sp(0)
+                    size_hint_y: None
+                    height: sp(40)
+                    Label:
+                        text: 'Öğle'
+                    PrayedCheckBox:
+                        id: ogle
+                        name: 'ogle'
+                        size_hint: None, None
+                        height: sp(40)
+                        width: sp(80)
+
+                GridLayout:
+                    cols: 2
+                    rows: 1
+                    spacing: sp(-20), sp(0)
+                    size_hint_y: None
+                    height: sp(40)
+                    Label:
+                        text: 'İkindi'
+                    PrayedCheckBox:
+                        id: ikindi
+                        name: 'ikindi'
+                        size_hint: None, None
+                        height: sp(40)
+                        width: sp(80)
+
+                GridLayout:
+                    cols: 2
+                    rows: 1
+                    spacing: sp(-20), sp(0)
+                    size_hint_y: None
+                    height: sp(40)
+                    Label:
+                        text: 'Akşam'
+                    PrayedCheckBox:
+                        id: aksam
+                        name: 'aksam'
+                        size_hint: None, None
+                        height: sp(40)
+                        width: sp(80)
+
+                GridLayout:
+                    cols: 2
+                    rows: 1
+                    spacing: sp(-20), sp(0)
+                    size_hint_y: None
+                    height: sp(40)
+                    Label:
+                        text: 'Yatsı'
+                    PrayedCheckBox:
+                        id: yatsi
+                        name: 'yatsi'
+                        size_hint: None, None
+                        height: sp(40)
+                        width: sp(80)
+
+                GridLayout:
+                    cols: 2
+                    rows: 1
+                    spacing: sp(-20), sp(0)
+                    size_hint_y: None
+                    height: sp(40)
+                    Label:
+                        text: 'Vitr'
+                    PrayedCheckBox:
+                        id: vitr
+                        name: 'vitr'
+                        size_hint: None, None
+                        height: sp(40)
+                        width: sp(80)
