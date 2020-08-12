@@ -2,6 +2,8 @@
 
 <Label>
     canvas.before:
+        Color:
+            rgba: get_color_from_hex('ffffff')
         Rectangle:
             pos: self.pos[0], self.pos[1]+sp(25)/2
             size: self.size[0], self.size[1]-sp(25)
@@ -33,6 +35,8 @@
 
 <CheckBox>
     canvas.before:
+        Color:
+            rgba: get_color_from_hex('ffffff')
         Rectangle:
             pos: self.pos[0], self.pos[1]+sp(25)/2
             size: self.size[0], self.size[1]-sp(25)

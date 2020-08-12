@@ -30,6 +30,28 @@ def find_parent(cur_class, target_class):
     return req_class
 
 
+def get_color(obj):
+    u"""Color of widget returns."""
+    try:
+        obj_color = list(filter(lambda x: str(x).find('Color') != -1, obj.canvas.before.children))[0]
+    except IndexError:
+        obj_color = None
+    return obj_color
+
+
+def set_color(obj, color):
+    obj_color = get_color(obj)
+    try:
+        obj_color.rgba = color
+    except AttributeError:
+        pass
+
+
+def set_children_color(obj, color):
+    for child in getattr(obj, 'children', []):
+        set_color(child, color)
+
+
 PATH_SEPARATOR = '/'
 if os.path.realpath(__file__).find('\\') != -1:
     PATH_SEPARATOR = '\\'

@@ -11,13 +11,15 @@ from kivy.uix.checkbox import CheckBox
 from kivy.uix.screenmanager import ScreenManager
 from kivy.utils import get_color_from_hex
 
-from config import DB, find_parent
+from config import DB, find_parent, set_children_color
 
 
 class PrayedCheckBox(CheckBox):
     name = StringProperty()
 
     def on_press(self):
+        set_children_color(self.parent, get_color_from_hex('B8D5CD'))
+
         self.disabled = True
         root = find_parent(self, Praying)
         key = 'status_{}'.format(root.today)
@@ -34,6 +36,7 @@ class MissedCheckBox(CheckBox):
     def __init__(self, **kwargs):
         super(MissedCheckBox, self).__init__(**kwargs)
         self.disabled = self.active = True
+        set_children_color(self.parent, get_color_from_hex('B8D5CD'))
 
     def on_press(self):
         root = find_parent(self, Praying)
@@ -55,6 +58,7 @@ class MissedCheckBox(CheckBox):
         else:
             label.text = ''
             self.disabled = True
+            set_children_color(self.parent, get_color_from_hex('B8D5CD'))
 
 
 class Praying(ScreenManager):
@@ -112,7 +116,12 @@ class Praying(ScreenManager):
             if record[pray_name]:
                 button = getattr(self.entrance, pray_name)
                 button.active = button.disabled = True
+                set_children_color(button.parent, get_color_from_hex('B8D5CD'))
             elif datetime.now() > self._datetime_parser(pray_slot[1]):
+                button = getattr(self.entrance, pray_name)
+                button.disabled = True
+                set_children_color(button.parent, get_color_from_hex('FF6666'))
+            elif datetime.now() < self._datetime_parser(pray_slot[0]):
                 button = getattr(self.entrance, pray_name)
                 button.disabled = True
 
@@ -120,6 +129,8 @@ class Praying(ScreenManager):
         DB.store_sync()
 
     def check_missed_prays(self):
+        times = {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None}
+        removable_keys = []
         for key in DB.store_keys():
             if key.startswith('status'):
                 rec = list(filter(lambda x: not x[1], DB.store_get(key).items()))
@@ -127,12 +138,25 @@ class Praying(ScreenManager):
                     if key.find(str(self.today)) != -1:
                         if datetime.now() < self._datetime_parser(self.times[time][1]):
                             continue
+                    times.pop(time)
                     layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
                     button = getattr(layout, '{}_button'.format(time))
                     label = getattr(layout, '{}_count'.format(time))
                     button.active = button.disabled = False
                     button.db_keys.append(key)
                     label.text = str((label.text and int(label.text) or 0) + 1)
+                    set_children_color(layout, get_color_from_hex('FF6666'))
+                if not rec:
+                    removable_keys.append(key)
+
+        for time in times:
+            layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
+            set_children_color(layout, get_color_from_hex('B8D5CD'))
+
+        for key in removable_keys:
+            DB.store_delete(key)
+
+        DB.store_sync()
 
 
 class PrayingApp(App):
