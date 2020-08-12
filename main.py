@@ -6,7 +6,7 @@ from kivy import Config
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.lang import Builder
-from kivy.properties import StringProperty
+from kivy.properties import StringProperty, ListProperty
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.screenmanager import ScreenManager
 from kivy.utils import get_color_from_hex
@@ -29,6 +29,32 @@ class PrayedCheckBox(CheckBox):
 
 class MissedCheckBox(CheckBox):
     name = StringProperty()
+    db_keys = ListProperty(defaultvalue=[])
+
+    def __init__(self, **kwargs):
+        super(MissedCheckBox, self).__init__(**kwargs)
+        self.disabled = self.active = True
+
+    def on_press(self):
+        root = find_parent(self, Praying)
+        time = self.name
+        key = self.db_keys.pop()
+
+        record = DB.store_get(key)
+        record[time] = str(datetime.now())
+        DB.store_put(key, record)
+        DB.store_sync()
+
+        layout = getattr(root.entrance.missed, 'missed_{}'.format(time))
+        label = getattr(layout, '{}_count'.format(time))
+
+        count = max(0, (label.text and int(label.text) or 0) - 1)
+        if count > 0:
+            label.text = str(count)
+            self.active = False
+        else:
+            label.text = ''
+            self.disabled = True
 
 
 class Praying(ScreenManager):
@@ -38,6 +64,7 @@ class Praying(ScreenManager):
         self.entrance.today.text = str(self.today)
         self.times = self.fetch_today_praying_times()
         self.check_praying_status()
+        self.check_missed_prays()
 
     @staticmethod
     def _date_parser(rec):
@@ -91,6 +118,21 @@ class Praying(ScreenManager):
 
         DB.store_put(key, record)
         DB.store_sync()
+
+    def check_missed_prays(self):
+        for key in DB.store_keys():
+            if key.startswith('status'):
+                rec = list(filter(lambda x: not x[1], DB.store_get(key).items()))
+                for time, _ in rec:
+                    if key.find(str(self.today)) != -1:
+                        if datetime.now() < self._datetime_parser(self.times[time][1]):
+                            continue
+                    layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
+                    button = getattr(layout, '{}_button'.format(time))
+                    label = getattr(layout, '{}_count'.format(time))
+                    button.active = button.disabled = False
+                    button.db_keys.append(key)
+                    label.text = str((label.text and int(label.text) or 0) + 1)
 
 
 class PrayingApp(App):

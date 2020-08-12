@@ -62,6 +62,7 @@
         id: entrance
         name: 'entrance'
         times: times
+        missed: missed
         today: today
 
         sabah: sabah
@@ -73,7 +74,7 @@
 
         GridLayout:
             cols: 1
-            rows: 2
+            rows: 3
 
             padding: 15, 15, 15, 15
             spacing: sp(40), sp(40)
@@ -181,3 +182,194 @@
                         size_hint: None, None
                         height: sp(40)
                         width: sp(80)
+
+
+            GridLayout:
+                id: missed
+                name: 'missed'
+
+                missed_sabah: missed_sabah
+                missed_ogle: missed_ogle
+                missed_ikindi: missed_ikindi
+                missed_aksam: missed_aksam
+                missed_yatsi: missed_yatsi
+                missed_vitr: missed_vitr
+
+                cols: 6
+                rows: 1
+
+                spacing: sp(10), sp(10)
+
+                GridLayout:
+                    id: missed_sabah
+                    name: 'sabah'
+
+                    sabah_count: sabah_count
+                    sabah_button: sabah_button
+
+                    cols: 1
+                    rows: 3
+                    size_hint_y: None
+                    height: sp(30)
+                    Label:
+                        text: 'Sabah'
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    Label:
+                        id: sabah_count
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    MissedCheckBox:
+                        id: sabah_button
+                        name: 'sabah'
+                        size_hint_y: None
+                        height: sp(30)
+
+                GridLayout:
+                    id: missed_ogle
+                    name: 'ogle'
+
+                    ogle_count: ogle_count
+                    ogle_button: ogle_button
+
+                    cols: 1
+                    rows: 3
+                    size_hint_y: None
+                    height: sp(30)
+                    Label:
+                        text: 'Öğle'
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    Label:
+                        id: ogle_count
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    MissedCheckBox:
+                        id: ogle_button
+                        name: 'ogle'
+                        size_hint_y: None
+                        height: sp(30)
+
+                GridLayout:
+                    id: missed_ikindi
+                    name: 'ikindi'
+
+                    ikindi_count: ikindi_count
+                    ikindi_button: ikindi_button
+
+                    cols: 1
+                    rows: 3
+                    size_hint_y: None
+                    height: sp(30)
+                    Label:
+                        text: 'İkindi'
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    Label:
+                        id: ikindi_count
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    MissedCheckBox:
+                        id: ikindi_button
+                        name: 'ikindi'
+                        size_hint_y: None
+                        height: sp(30)
+
+                GridLayout:
+                    id: missed_aksam
+                    name: 'aksam'
+
+                    aksam_count: aksam_count
+                    aksam_button: aksam_button
+
+                    cols: 1
+                    rows: 3
+                    size_hint_y: None
+                    height: sp(30)
+                    Label:
+                        text: 'Akşam'
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    Label:
+                        id: aksam_count
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    MissedCheckBox:
+                        id: aksam_button
+                        name: 'aksam'
+                        size_hint_y: None
+                        height: sp(30)
+
+                GridLayout:
+                    id: missed_yatsi
+                    name: 'yatsi'
+
+                    yatsi_count: yatsi_count
+                    yatsi_button: yatsi_button
+
+                    cols: 1
+                    rows: 3
+                    size_hint_y: None
+                    height: sp(30)
+                    Label:
+                        text: 'Yatsı'
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    Label:
+                        id: yatsi_count
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    MissedCheckBox:
+                        id: yatsi_button
+                        name: 'yatsi'
+                        size_hint_y: None
+                        height: sp(30)
+
+                GridLayout:
+                    id: missed_vitr
+                    name: 'vitr'
+
+                    vitr_count: vitr_count
+                    vitr_button: vitr_button
+
+                    cols: 1
+                    rows: 3
+                    size_hint_y: None
+                    height: sp(30)
+                    Label:
+                        text: 'Vitr'
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    Label:
+                        id: vitr_count
+                        halign: 'center'
+                        padding: 20, 10
+                        height: sp(30)
+                        font_size: sp(15)
+                    MissedCheckBox:
+                        id: vitr_button
+                        name: 'vitr'
+                        size_hint_y: None
+                        height: sp(30)
