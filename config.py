@@ -1,17 +1,7 @@
 import os
-from subprocess import Popen, PIPE
 
+from kivy import kivy_home_dir
 from kivy.storage.jsonstore import JsonStore
-
-
-def run_syscall(cmd):
-    """
-    run_syscall; handle sys calls this function used as shortcut.
-    ::cmd: String, shell command is expected.
-    """
-    p = Popen(cmd, shell=True, stdout=PIPE, stderr=PIPE)
-    out, err = p.communicate()
-    return out.rstrip()
 
 
 def find_parent(cur_class, target_class):
@@ -58,14 +48,7 @@ if os.path.realpath(__file__).find('\\') != -1:
 
 PROJECT_PATH = PATH_SEPARATOR.join(os.path.realpath(__file__).split(PATH_SEPARATOR)[:-1])
 
-if PATH_SEPARATOR == '/':
-    cmd = "echo $HOME"
-else:
-    cmd = "echo %USERPROFILE%"
-
-out = run_syscall(cmd).decode()
-DEF_USER = out.split(PATH_SEPARATOR)[-1]
-REPO_FILE = "{0}{1}.kivy-praying{1}praying".format(out.rstrip(), PATH_SEPARATOR)
+REPO_FILE = "{0}{1}.kivy-praying{1}praying".format(kivy_home_dir.rstrip(), PATH_SEPARATOR)
 
 directory = os.path.dirname(REPO_FILE)
 if not os.path.exists(directory):

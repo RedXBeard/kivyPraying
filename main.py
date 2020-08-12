@@ -87,7 +87,7 @@ class Praying(ScreenManager):
         try:
             record = DB.store_get(str(self.today))
         except KeyError:
-            f = urllib.request.urlopen('https://ezanvakti.herokuapp.com/vakitler?ilce=9541')
+            f = urllib.request.urlopen('http://ezanvakti.herokuapp.com/vakitler?ilce=9541')
             data = json.loads(f.read().decode('utf-8'))
             times = list(filter(lambda x: self._date_parser(x['MiladiTarihKisa']) == self.today, data))[0]
             next_day = filter(lambda x: self._date_parser(x['MiladiTarihKisa']) == self.today + timedelta(days=1), data)
