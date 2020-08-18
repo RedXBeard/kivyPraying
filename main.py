@@ -6,12 +6,12 @@ from kivy import Config
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.lang import Builder
-from kivy.properties import StringProperty, ListProperty
+from kivy.properties import StringProperty, ListProperty, Clock
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.screenmanager import ScreenManager
 from kivy.utils import get_color_from_hex
 
-from config import DB, find_parent, set_children_color
+from config import DB, find_parent, set_children_color, seconds_converter, WEEKDAYS, MONTHS
 
 
 class PrayedCheckBox(CheckBox):
@@ -65,10 +65,12 @@ class Praying(ScreenManager):
     def __init__(self, **kwargs):
         super(Praying, self).__init__(**kwargs)
         self.today = datetime.now().date()
-        self.entrance.today.text = str(self.today)
+        self.entrance.today.text = '{} {} {}, {}'.format(self.today.day, MONTHS[self.today.month],
+                                                         self.today.year, WEEKDAYS[self.today.weekday()])
         self.times = self.fetch_today_praying_times()
         self.check_praying_status()
         self.check_missed_prays()
+        self.check_counter()
 
     @staticmethod
     def _date_parser(rec):
@@ -112,21 +114,34 @@ class Praying(ScreenManager):
         except KeyError:
             record = {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None}
 
+        update = False
         for pray_name, pray_slot in self.times.items():
-            if record[pray_name]:
+            if record[pray_name]:  # Kilindi
                 button = getattr(self.entrance, pray_name)
                 button.active = button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('B8D5CD'))
-            elif datetime.now() > self._datetime_parser(pray_slot[1]):
+                update = True
+            elif datetime.now() > self._datetime_parser(pray_slot[1]):  # Kacirdi
                 button = getattr(self.entrance, pray_name)
                 button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('FF6666'))
-            elif datetime.now() < self._datetime_parser(pray_slot[0]):
+                update = True
+            elif datetime.now() < self._datetime_parser(pray_slot[0]):  # daha var
                 button = getattr(self.entrance, pray_name)
                 button.disabled = True
+                set_children_color(button.parent, get_color_from_hex('D2D1BE'))
+                update = True
+            else:  # Zaman var
+                button = getattr(self.entrance, pray_name)
+                button.disabled = False
+                set_children_color(button.parent, get_color_from_hex('FFFFFF'))
+                update = True
 
-        DB.store_put(key, record)
-        DB.store_sync()
+        if update:
+            DB.store_put(key, record)
+            DB.store_sync()
+
+        Clock.schedule_once(lambda dt: self.check_praying_status(), .5)
 
     def check_missed_prays(self):
         times = {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None}
@@ -157,6 +172,34 @@ class Praying(ScreenManager):
             DB.store_delete(key)
 
         DB.store_sync()
+
+    def check_counter(self):
+        order = ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi']
+        now = datetime.now()
+        record = DB.store_get(str(self.today))
+        upcoming = None
+        current = None
+        total_second = 0
+        for key in order:
+            start, end, = list(map(lambda x: self._datetime_parser(x), record[key]))
+            if start < now < end:
+                current = end
+                break
+            if start > now:
+                upcoming = start
+                break
+
+        if current is not None:
+            total_second = int((current - now).total_seconds())
+        if upcoming is not None:
+            total_second = int((upcoming - now).total_seconds())
+
+        hours, minutes, seconds = seconds_converter(total_second)
+        self.entrance.info.hours.text = hours
+        self.entrance.info.minutes.text = minutes
+        self.entrance.info.seconds.text = seconds
+
+        Clock.schedule_once(lambda dt: self.check_counter(), .5)
 
 
 class PrayingApp(App):

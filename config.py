@@ -42,6 +42,18 @@ def set_children_color(obj, color):
         set_color(child, color)
 
 
+def seconds_converter(scnds):
+    seconds = scnds % 60
+    mnts = (scnds - seconds) / 60
+    minutes = mnts % 60
+    hours = (mnts - minutes) / 60
+
+    return list(map(lambda x: str(x).zfill(2), map(int, [hours, minutes, seconds])))
+
+
+WEEKDAYS = ['Pazartesi', 'Salı', 'Çarsamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
+MONTHS = ['', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+          'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
 PATH_SEPARATOR = '/'
 if os.path.realpath(__file__).find('\\') != -1:
     PATH_SEPARATOR = '\\'

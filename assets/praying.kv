@@ -68,6 +68,7 @@
         times: times
         missed: missed
         today: today
+        info: info
 
         sabah: sabah
         ogle: ogle
@@ -78,7 +79,7 @@
 
         GridLayout:
             cols: 1
-            rows: 3
+            rows: 4
 
             padding: 15, 15, 15, 15
             spacing: sp(40), sp(40)
@@ -187,10 +188,69 @@
                         height: sp(40)
                         width: sp(40)
 
+            GridLayout:
+                canvas.before:
+                    Color:
+                        rgba: get_color_from_hex('ffffff')
+                    Rectangle:
+                        pos: self.pos[0], self.pos[1]+sp(25)/2
+                        size: self.size[0], self.size[1]-sp(25)
+                    Rectangle:
+                        pos: self.pos[0]+sp(25)/2, self.pos[1]
+                        size: self.size[0]-sp(25), self.size[1]
+                    Ellipse:
+                        size: sp(25), sp(25)
+                        pos: self.pos[0], self.pos[1]
+                    Ellipse:
+                        size: sp(25), sp(25)
+                        pos: self.pos[0], self.pos[1]+self.height-sp(25)
+                    Ellipse:
+                        size: sp(25), sp(25)
+                        pos: self.pos[0]+self.width-sp(25), self.pos[1]
+                    Ellipse:
+                        size: sp(25), sp(25)
+                        pos: self.pos[0]+self.width-sp(25), self.pos[1]+self.height-sp(25)
+                id: info
+                rows: 1
+                cols: 5
+
+                hours: hours
+                minutes: minutes
+                seconds: seconds
+                size_hint_y: None
+                height: sp(40)
+
+                Label:
+                    id: hours
+                    halign: 'right'
+                    text: '23'
+
+                Label:
+                    halign: 'center'
+                    text: ':'
+                    size_hint_x: None
+                    width: sp(10)
+
+                Label:
+                    id: minutes
+                    halign: 'center'
+                    text: '59'
+                    size_hint_x: None
+                    width: sp(50)
+
+                Label:
+                    halign: 'center'
+                    text: ':'
+                    size_hint_x: None
+                    width: sp(10)
+
+                Label:
+                    id: seconds
+                    halign: 'left'
+                    text: '59'
 
             GridLayout:
                 id: missed
-                name: 'missed'
 
                 missed_sabah: missed_sabah
                 missed_ogle: missed_ogle
