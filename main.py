@@ -7,11 +7,39 @@ from kivy.app import App
 from kivy.core.window import Window
 from kivy.lang import Builder
 from kivy.properties import StringProperty, ListProperty, Clock
+from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.checkbox import CheckBox
+from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager
 from kivy.utils import get_color_from_hex
 
 from config import DB, find_parent, set_children_color, seconds_converter, WEEKDAYS, MONTHS
+
+
+class ResetButton(ButtonBehavior, Label):
+    def __init__(self, **kwargs):
+        super(ResetButton, self).__init__(**kwargs)
+        self.press_count = 0
+
+    def on_press(self):
+        self.disabled = True
+        self.press_count += 1
+        if self.press_count == 1:
+            set_children_color(self.parent, get_color_from_hex('FF6666'))
+            Clock.schedule_once(lambda dt: self.check_press(), 1)
+        if self.press_count > 1:
+            root = find_parent(self, Praying)
+            for key in DB.store_keys():
+                if key.startswith('status'):
+                    DB.delete(key)
+            self.press_count = 0
+            root.check_missed_prays()
+            set_children_color(self.parent, get_color_from_hex('FFFFFF'))
+        self.disabled = False
+
+    def check_press(self):
+        self.press_count = 0
+        set_children_color(self.parent, get_color_from_hex('FFFFFF'))
 
 
 class PrayedCheckBox(CheckBox):
@@ -153,7 +181,7 @@ class Praying(ScreenManager):
                     if key.find(str(self.today)) != -1:
                         if datetime.now() < self._datetime_parser(self.times[time][1]):
                             continue
-                    times.pop(time)
+                    times.pop(time, None)
                     layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
                     button = getattr(layout, '{}_button'.format(time))
                     label = getattr(layout, '{}_count'.format(time))

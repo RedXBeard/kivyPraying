@@ -79,7 +79,7 @@
 
         GridLayout:
             cols: 1
-            rows: 4
+            rows: 5
 
             padding: 15, 15, 15, 15
             spacing: sp(40), sp(40)
@@ -263,6 +263,8 @@
                 rows: 1
 
                 spacing: sp(10), sp(10)
+                size_hint_y: None
+                height: sp(110)
 
                 GridLayout:
                     id: missed_sabah
@@ -437,3 +439,18 @@
                         name: 'vitr'
                         size_hint_y: None
                         height: sp(30)
+
+            GridLayout:
+                cols: 1
+                rows: 1
+                size_hint_y: None
+                height: sp(60)
+
+                ResetButton:
+                    text: 'Sıfırla'
+                    halign: 'center'
+                    size_hint_x: None
+                    width: sp(150)
+                    height: sp(30)
+                    font_size: sp(15)
+                    padding: 0, 10
