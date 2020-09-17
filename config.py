@@ -1,4 +1,5 @@
 import os
+from datetime import datetime
 
 from kivy import kivy_home_dir
 from kivy.storage.jsonstore import JsonStore
@@ -67,3 +68,16 @@ if not os.path.exists(directory):
     os.makedirs(directory)
 DB = JsonStore(REPO_FILE)
 DB.store_sync()
+
+
+def _date_parser(rec):
+    return datetime.strptime(rec, '%d.%m.%Y').date()
+
+
+def _datetime_parser(rec):
+    return datetime.strptime(rec, '%d.%m.%Y %H:%M')
+
+
+def _concat_date_time(time, date):
+    date = '{}.{}.{}'.format(date.day, date.month, date.year)
+    return '{} {}'.format(date, time)

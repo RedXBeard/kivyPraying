@@ -1,6 +1,5 @@
-import json
-import urllib.request
-from datetime import datetime, timedelta
+from datetime import datetime
+from urllib.error import HTTPError
 
 from kivy import Config
 from kivy.app import App
@@ -13,7 +12,8 @@ from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager
 from kivy.utils import get_color_from_hex
 
-from config import DB, find_parent, set_children_color, seconds_converter, WEEKDAYS, MONTHS
+from config import DB, find_parent, set_children_color, seconds_converter, WEEKDAYS, MONTHS, _datetime_parser
+from providers import Heroku, CollectApi
 
 
 class ResetButton(ButtonBehavior, Label):
@@ -100,39 +100,20 @@ class Praying(ScreenManager):
         self.check_missed_prays()
         self.check_counter()
 
-    @staticmethod
-    def _date_parser(rec):
-        return datetime.strptime(rec, '%d.%m.%Y').date()
-
-    @staticmethod
-    def _datetime_parser(rec):
-        return datetime.strptime(rec, '%d.%m.%Y %H:%M')
-
-    def _concat_date_time(self, time, date=None):
-        date = date or self.today
-        date = '{}.{}.{}'.format(date.day, date.month, date.year)
-        return '{} {}'.format(date, time)
-
     def fetch_today_praying_times(self):
+        record = None
         try:
             record = DB.store_get(str(self.today))
         except KeyError:
-            f = urllib.request.urlopen('http://ezanvakti.herokuapp.com/vakitler?ilce=9541')
-            data = json.loads(f.read().decode('utf-8'))
-            times = list(filter(lambda x: self._date_parser(x['MiladiTarihKisa']) == self.today, data))[0]
-            next_day = filter(lambda x: self._date_parser(x['MiladiTarihKisa']) == self.today + timedelta(days=1), data)
-            next_day = list(next_day)[0]
-            record = {'sabah': (self._concat_date_time(times['Imsak']), self._concat_date_time(times['Gunes'])),
-                      'ogle': (self._concat_date_time(times['Ogle']), self._concat_date_time(times['Ikindi'])),
-                      'ikindi': (self._concat_date_time(times['Ikindi']), self._concat_date_time(times['Aksam'])),
-                      'aksam': (self._concat_date_time(times['Aksam']), self._concat_date_time(times['Yatsi'])),
-                      'yatsi': (self._concat_date_time(times['Yatsi']),
-                                self._concat_date_time(next_day['Imsak'], self.today + timedelta(days=1))),
-                      'vitr': (self._concat_date_time(times['Yatsi']),
-                               self._concat_date_time(next_day['Imsak'], self.today + timedelta(days=1)))}
-
-            DB.store_put(str(self.today), record)
-            DB.store_sync()
+            for provider in (Heroku(), CollectApi()):
+                try:
+                    record = provider(self.today)
+                    break
+                except HTTPError:
+                    pass
+            if record:
+                DB.store_put(str(self.today), record)
+                DB.store_sync()
         return record
 
     def check_praying_status(self):
@@ -149,12 +130,12 @@ class Praying(ScreenManager):
                 button.active = button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('B8D5CD'))
                 update = True
-            elif datetime.now() > self._datetime_parser(pray_slot[1]):  # Kacirdi
+            elif datetime.now() > _datetime_parser(pray_slot[1]):  # Kacirdi
                 button = getattr(self.entrance, pray_name)
                 button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('FF6666'))
                 update = True
-            elif datetime.now() < self._datetime_parser(pray_slot[0]):  # daha var
+            elif datetime.now() < _datetime_parser(pray_slot[0]):  # daha var
                 button = getattr(self.entrance, pray_name)
                 button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('D2D1BE'))
@@ -179,7 +160,7 @@ class Praying(ScreenManager):
                 rec = list(filter(lambda x: not x[1], DB.store_get(key).items()))
                 for time, _ in rec:
                     if key.find(str(self.today)) != -1:
-                        if datetime.now() < self._datetime_parser(self.times[time][1]):
+                        if datetime.now() < _datetime_parser(self.times[time][1]):
                             continue
                     times.pop(time, None)
                     layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
@@ -209,7 +190,7 @@ class Praying(ScreenManager):
         current = None
         total_second = 0
         for key in order:
-            start, end, = list(map(lambda x: self._datetime_parser(x), record[key]))
+            start, end, = list(map(lambda x: _datetime_parser(x), record[key]))
             if start < now < end:
                 current = end
                 break
