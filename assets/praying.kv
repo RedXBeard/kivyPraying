@@ -60,7 +60,33 @@
     spacing: 15, 15
 
 <Praying>
+    welcome: welcome
     entrance: entrance
+    data: data
+
+    Screen:
+        id: welcome
+        name: 'welcome'
+        progressbar: progressbar
+
+        GridLayout:
+            rows: 3
+            cols: 1
+            padding: 15, 15, 15, 15
+            spacing: sp(40), sp(40)
+
+            Image:
+                source: 'assets/prayerapp.png'
+                valign: 'center'
+
+            ProgressBar:
+                id: progressbar
+                max: 1000
+                value: 0
+                size_hint_y: None
+                height: sp(40)
+
+            Widget:
 
     Screen:
         id: entrance
@@ -441,7 +467,7 @@
                         height: sp(30)
 
             GridLayout:
-                cols: 1
+                cols: 3
                 rows: 1
                 size_hint_y: None
                 height: sp(60)
@@ -454,3 +480,38 @@
                     height: sp(30)
                     font_size: sp(15)
                     padding: 0, 10
+
+                Widget:
+
+                RecordButton:
+                    text: 'Kayıtlar'
+                    halign: 'center'
+                    size_hint_x: None
+                    width: sp(150)
+                    height: sp(30)
+                    font_size: sp(15)
+                    padding: 0, 10
+
+
+    Screen:
+        id: data
+        name: 'data'
+        record: record
+
+        GridLayout:
+            cols: 1
+            rows: 2
+            padding: 10, 10, 10, 10
+
+            BackButton:
+                text: '<'
+                halign: 'center'
+                size_hint_x: None
+                width: sp(30)
+                height: sp(30)
+                font_size: sp(25)
+                padding: 0, 0
+
+            TextInput:
+                id: record
+
