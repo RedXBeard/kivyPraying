@@ -1,5 +1,5 @@
-import os
 import gettext
+import os
 
 from kivy.lang import Observable
 
@@ -36,6 +36,7 @@ class Lang(Observable):
         locale_dir = os.path.join(os.path.dirname(__file__), 'assets', 'locales')
         locales = gettext.translation('kivypraying', locale_dir, languages=[lang])
         self.ugettext = locales.gettext
+        self.lang = lang
 
         # update all the kv rules attached to this text
         for func, largs, kwargs in self.observers:

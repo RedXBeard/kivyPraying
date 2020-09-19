@@ -7,8 +7,7 @@ from kivy.core.window import Window
 from kivy.factory import Factory
 from kivy.lang import Builder
 from kivy.metrics import sp
-from kivy.properties import StringProperty, ListProperty, Clock, BooleanProperty, ObjectProperty, string_types, \
-    DictProperty
+from kivy.properties import StringProperty, ListProperty, Clock, BooleanProperty, ObjectProperty, string_types
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.dropdown import DropDown
@@ -20,16 +19,15 @@ from config import DB, find_parent, set_children_color, seconds_converter, WEEKD
 from language import Lang
 from providers import Heroku, CollectApi
 
-trans = Lang('tr')
+trans = Lang('en')
 
 
 class SpinnerOption(ButtonBehavior, Label):
     pass
 
-
 class LangSpinner(ButtonBehavior, Label):
     values = ListProperty()
-    values_dict = DictProperty()
+    values_dict = {'Turkce': 'tr', 'English': 'en'}
     text_autoupdate = BooleanProperty(False)
     option_cls = ObjectProperty(SpinnerOption)
     dropdown_cls = ObjectProperty(DropDown)
@@ -91,6 +89,7 @@ class LangSpinner(ButtonBehavior, Label):
             item.bind(on_release=lambda option: dp.select(option.text))
             dp.add_widget(item)
             set_children_color(item.parent, get_color_from_hex('D2D1BE'))
+        self.text = dict(list(map(lambda x: list(reversed(list(x))), self.values_dict.items())))[trans.lang]
         if text_autoupdate:
             if values:
                 if not self.text or self.text not in values:
@@ -107,7 +106,10 @@ class LangSpinner(ButtonBehavior, Label):
 
     def _on_dropdown_select(self, instance, data, *largs):
         self.text = data
-        trans.switch_lang(self.values_dict.get(data))
+        lang = self.values_dict.get(data)
+        trans.switch_lang(lang)
+        DB.store_put('language', lang)
+        DB.store_sync()
         self.is_open = False
 
     def on_is_open(self, instance, value):
@@ -362,6 +364,11 @@ class PrayingApp(App):
         self.title = 'Kivy Praying'
 
     def build(self):
+        try:
+            lang = DB.store_get('language')
+            trans.switch_lang(lang)
+        except KeyError:
+            pass
         return Praying()
 
 

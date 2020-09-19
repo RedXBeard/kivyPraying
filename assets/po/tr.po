@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-19 22:23+0300\n"
+"POT-Creation-Date: 2020-09-20 00:26+0300\n"
 "PO-Revision-Date: 2020-09-19 22:23+0300\n"
 "Last-Translator: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
 "Language-Team: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
@@ -17,38 +17,38 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: assets/praying.kv:135 assets/praying.kv:308
+#: assets/praying.kv:157 assets/praying.kv:330
 msgid "Sabah"
 msgstr "Sabah"
 
-#: assets/praying.kv:150 assets/praying.kv:337
+#: assets/praying.kv:172 assets/praying.kv:359
 msgid "Ogle"
 msgstr "Öğle"
 
-#: assets/praying.kv:165 assets/praying.kv:366
+#: assets/praying.kv:187 assets/praying.kv:388
 msgid "Ikindi"
 msgstr "İkindi"
 
-#: assets/praying.kv:180 assets/praying.kv:395
+#: assets/praying.kv:202 assets/praying.kv:417
 msgid "Aksam"
 msgstr "Akşam"
 
-#: assets/praying.kv:195 assets/praying.kv:424
+#: assets/praying.kv:217 assets/praying.kv:446
 msgid "Yatsi"
 msgstr "Yatsı"
 
-#: assets/praying.kv:210 assets/praying.kv:453
+#: assets/praying.kv:232 assets/praying.kv:475
 msgid "Vitr"
 msgstr "Vitr"
 
-#: assets/praying.kv:477
+#: assets/praying.kv:499
 msgid "Sifirla"
 msgstr "Sıfırla"
 
-#: assets/praying.kv:488
+#: assets/praying.kv:510
 msgid "Kayitlar"
 msgstr "Kayıtlar"
 
-#: assets/praying.kv:508
+#: assets/praying.kv:530
 msgid "Geri"
 msgstr "Geri"
