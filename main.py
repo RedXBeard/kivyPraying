@@ -2,7 +2,6 @@ import json
 from datetime import datetime
 from urllib.error import HTTPError
 
-from kivy import Config
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.lang import Builder
@@ -265,8 +264,7 @@ class PrayingApp(App):
 
 
 if __name__ == '__main__':
-    Config.set('kivy', 'desktop', 1)
-    Config.set('input', 'mouse', 'mouse,multitouch_on_demand')
     Window.clearcolor = get_color_from_hex('E2DDD5')
-    Window.size = 600, 600
+    Window.keyboard_anim_args = {'d': .2, 't': 'in_out_expo'}
+    Window.softinput_mode = 'below_target'
     PrayingApp().run()
