@@ -1,4 +1,5 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
+#:import trans __main__.trans
 
 <Label>
     canvas.before:
@@ -105,10 +106,32 @@
 
         GridLayout:
             cols: 1
-            rows: 5
+            rows: 6
 
             padding: 15, 15, 15, 15
             spacing: sp(40), sp(40)
+
+            GridLayout:
+                cols: 2
+                rows: 1
+                size_hint_y: None
+                height: sp(0)
+
+                Widget:
+                LangSpinner:
+                    canvas.before:
+                        Color:
+                            rgba: get_color_from_hex('D2D1BE')
+                    size_hint: None, None
+                    height: sp(30)
+                    width: sp(120)
+                    values: 'Turkce', 'English'
+                    values_dict: {'Turkce': 'tr','English': 'en'}
+                    text_size: self.size
+                    sync_height: True
+                    halign: 'center'
+                    font_size: sp(15)
+
 
             Label:
                 id: today
@@ -131,7 +154,7 @@
                     size_hint_y: None
                     height: sp(40)
                     Label:
-                        text: 'Sabah'
+                        text: trans._('Sabah')
                     PrayedCheckBox:
                         id: sabah
                         name: 'sabah'
@@ -146,7 +169,7 @@
                     size_hint_y: None
                     height: sp(40)
                     Label:
-                        text: 'Öğle'
+                        text: trans._('Ogle')
                     PrayedCheckBox:
                         id: ogle
                         name: 'ogle'
@@ -161,7 +184,7 @@
                     size_hint_y: None
                     height: sp(40)
                     Label:
-                        text: 'İkindi'
+                        text: trans._('Ikindi')
                     PrayedCheckBox:
                         id: ikindi
                         name: 'ikindi'
@@ -176,7 +199,7 @@
                     size_hint_y: None
                     height: sp(40)
                     Label:
-                        text: 'Akşam'
+                        text: trans._('Aksam')
                     PrayedCheckBox:
                         id: aksam
                         name: 'aksam'
@@ -191,7 +214,7 @@
                     size_hint_y: None
                     height: sp(40)
                     Label:
-                        text: 'Yatsı'
+                        text: trans._('Yatsi')
                     PrayedCheckBox:
                         id: yatsi
                         name: 'yatsi'
@@ -206,7 +229,7 @@
                     size_hint_y: None
                     height: sp(40)
                     Label:
-                        text: 'Vitr'
+                        text: trans._('Vitr')
                     PrayedCheckBox:
                         id: vitr
                         name: 'vitr'
@@ -304,7 +327,7 @@
                     size_hint_y: None
                     height: sp(30)
                     Label:
-                        text: 'Sabah'
+                        text: trans._('Sabah')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
@@ -333,7 +356,7 @@
                     size_hint_y: None
                     height: sp(30)
                     Label:
-                        text: 'Öğle'
+                        text: trans._(u'Ogle')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
@@ -362,7 +385,7 @@
                     size_hint_y: None
                     height: sp(30)
                     Label:
-                        text: 'İkindi'
+                        text: trans._('Ikindi')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
@@ -391,7 +414,7 @@
                     size_hint_y: None
                     height: sp(30)
                     Label:
-                        text: 'Akşam'
+                        text: trans._('Aksam')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
@@ -420,7 +443,7 @@
                     size_hint_y: None
                     height: sp(30)
                     Label:
-                        text: 'Yatsı'
+                        text: trans._('Yatsi')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
@@ -449,7 +472,7 @@
                     size_hint_y: None
                     height: sp(30)
                     Label:
-                        text: 'Vitr'
+                        text: trans._('Vitr')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
@@ -473,7 +496,7 @@
                 height: sp(60)
 
                 ResetButton:
-                    text: 'Sıfırla'
+                    text: trans._('Sifirla')
                     halign: 'center'
                     size_hint_x: None
                     width: sp(150)
@@ -484,7 +507,7 @@
                 Widget:
 
                 RecordButton:
-                    text: 'Kayıtlar'
+                    text: trans._('Kayitlar')
                     halign: 'center'
                     size_hint_x: None
                     width: sp(150)
@@ -504,13 +527,13 @@
             padding: 10, 10, 10, 10
 
             BackButton:
-                text: '<'
+                text: trans._('Geri')
                 halign: 'center'
                 size_hint_x: None
-                width: sp(30)
+                width: sp(60)
                 height: sp(30)
-                font_size: sp(25)
-                padding: 0, 0
+                font_size: sp(15)
+                padding: 0, 10
 
             GridLayout:
                 cols: 1

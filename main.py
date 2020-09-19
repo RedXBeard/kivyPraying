@@ -4,16 +4,118 @@ from urllib.error import HTTPError
 
 from kivy.app import App
 from kivy.core.window import Window
+from kivy.factory import Factory
 from kivy.lang import Builder
-from kivy.properties import StringProperty, ListProperty, Clock
+from kivy.metrics import sp
+from kivy.properties import StringProperty, ListProperty, Clock, BooleanProperty, ObjectProperty, string_types, \
+    DictProperty
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.checkbox import CheckBox
+from kivy.uix.dropdown import DropDown
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, SlideTransition
 from kivy.utils import get_color_from_hex
 
 from config import DB, find_parent, set_children_color, seconds_converter, WEEKDAYS, MONTHS, _datetime_parser, REPO_FILE
+from language import Lang
 from providers import Heroku, CollectApi
+
+trans = Lang('tr')
+
+
+class SpinnerOption(ButtonBehavior, Label):
+    pass
+
+
+class LangSpinner(ButtonBehavior, Label):
+    values = ListProperty()
+    values_dict = DictProperty()
+    text_autoupdate = BooleanProperty(False)
+    option_cls = ObjectProperty(SpinnerOption)
+    dropdown_cls = ObjectProperty(DropDown)
+    is_open = BooleanProperty(False)
+    sync_height = BooleanProperty(False)
+
+    def __init__(self, **kwargs):
+        self._dropdown = None
+        super(LangSpinner, self).__init__(**kwargs)
+        fbind = self.fbind
+        build_dropdown = self._build_dropdown
+        fbind('on_release', self._toggle_dropdown)
+        fbind('dropdown_cls', build_dropdown)
+        fbind('option_cls', build_dropdown)
+        fbind('values', self._update_dropdown)
+        fbind('size', self._update_dropdown_size)
+        fbind('text_autoupdate', self._update_dropdown)
+        build_dropdown()
+
+    def _build_dropdown(self, *largs):
+        if self._dropdown:
+            self._dropdown.unbind(on_select=self._on_dropdown_select)
+            self._dropdown.unbind(on_dismiss=self._close_dropdown)
+            self._dropdown.dismiss()
+            self._dropdown = None
+        cls = self.dropdown_cls
+        if isinstance(cls, string_types):
+            cls = Factory.get(cls)
+        self._dropdown = cls()
+        self._dropdown.bind(on_select=self._on_dropdown_select)
+        self._dropdown.bind(on_dismiss=self._close_dropdown)
+        self._update_dropdown()
+
+    def _update_dropdown_size(self, *largs):
+        if not self.sync_height:
+            return
+        dp = self._dropdown
+        if not dp:
+            return
+
+        container = dp.container
+        if not container:
+            return
+        h = self.height
+        for item in container.children[:]:
+            item.height = h
+
+    def _update_dropdown(self, *largs):
+        dp = self._dropdown
+        cls = self.option_cls
+        values = self.values
+        text_autoupdate = self.text_autoupdate
+        if isinstance(cls, string_types):
+            cls = Factory.get(cls)
+        dp.clear_widgets()
+        for value in values:
+            item = cls(text=value, font_size=sp(15), halign='center')
+            item.height = sp(30)  # self.height if self.sync_height else item.height
+            item.bind(on_release=lambda option: dp.select(option.text))
+            dp.add_widget(item)
+            set_children_color(item.parent, get_color_from_hex('D2D1BE'))
+        if text_autoupdate:
+            if values:
+                if not self.text or self.text not in values:
+                    self.text = values[0]
+            else:
+                self.text = ''
+
+    def _toggle_dropdown(self, *largs):
+        if self.values:
+            self.is_open = not self.is_open
+
+    def _close_dropdown(self, *largs):
+        self.is_open = False
+
+    def _on_dropdown_select(self, instance, data, *largs):
+        self.text = data
+        trans.switch_lang(self.values_dict.get(data))
+        self.is_open = False
+
+    def on_is_open(self, instance, value):
+        if value:
+            self._dropdown.open(self)
+        else:
+            if self._dropdown.attach_to:
+                self._dropdown.dismiss()
 
 
 class ResetButton(ButtonBehavior, Label):
@@ -140,7 +242,7 @@ class Praying(ScreenManager):
             return
         self.welcome.progressbar.value += per_step
 
-        Clock.schedule_once(lambda dt: self.progressbar_path(index+1, path), .5)
+        Clock.schedule_once(lambda dt: self.progressbar_path(index + 1, path), .5)
 
     def fetch_today_praying_times(self):
         record = None

@@ -1,0 +1,54 @@
+# internationalized Kivy app
+# Copyright (C) 2020 Barbaros Ali Yildirim
+# This file is distributed under the same license as the PACKAGE package.
+# Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>, 2020.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: 1.0.0\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2020-09-19 22:23+0300\n"
+"PO-Revision-Date: 2020-09-19 22:23+0300\n"
+"Last-Translator: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
+"Language-Team: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
+"Language: English\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=utf-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: assets/praying.kv:135 assets/praying.kv:308
+msgid "Sabah"
+msgstr "Fajr"
+
+#: assets/praying.kv:150 assets/praying.kv:337
+msgid "Ogle"
+msgstr "Zuhr"
+
+#: assets/praying.kv:165 assets/praying.kv:366
+msgid "Ikindi"
+msgstr "Asr"
+
+#: assets/praying.kv:180 assets/praying.kv:395
+msgid "Aksam"
+msgstr "Maghrib"
+
+#: assets/praying.kv:195 assets/praying.kv:424
+msgid "Yatsi"
+msgstr "Isha"
+
+#: assets/praying.kv:210 assets/praying.kv:453
+msgid "Vitr"
+msgstr "Vitor"
+
+#: assets/praying.kv:477
+msgid "Sifirla"
+msgstr "Reset"
+
+#: assets/praying.kv:488
+msgid "Kayitlar"
+msgstr "Records"
+
+#: assets/praying.kv:508
+msgid "Geri"
+msgstr "Back"
