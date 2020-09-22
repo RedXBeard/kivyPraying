@@ -1,4 +1,5 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
+#:import LangSpinner spinners.LangSpinner
 #:import trans __main__.trans
 
 <Label>
@@ -96,6 +97,8 @@
         missed: missed
         today: today
         info: info
+        city_selection: city_selection
+        lang_selection: lang_selection
 
         sabah: sabah
         ogle: ogle
@@ -112,20 +115,33 @@
             spacing: sp(40), sp(40)
 
             GridLayout:
-                cols: 2
+                cols: 3
                 rows: 1
                 size_hint_y: None
                 height: sp(0)
 
+                CitySpinner:
+                    canvas.before:
+                        Color:
+                            rgba: get_color_from_hex('D2D1BE')
+                    id: city_selection
+                    size_hint: None, None
+                    height: sp(30)
+                    width: sp(120)
+                    sync_height: True
+                    halign: 'center'
+                    font_size: sp(15)
+                    text_autoupdate: True
                 Widget:
                 LangSpinner:
                     canvas.before:
                         Color:
                             rgba: get_color_from_hex('D2D1BE')
+                    id: lang_selection
                     size_hint: None, None
                     height: sp(30)
                     width: sp(120)
-                    values: 'Turkce', 'English'
+                    values: 'Türkçe', 'English'
                     text_size: self.size
                     sync_height: True
                     halign: 'center'
@@ -137,6 +153,7 @@
                 id: today
                 name: 'today'
                 halign: 'center'
+                text: '{0} {1} {2}, {3}'.format(root.day, (root.month == 1 and trans._('Ocak') or root.month == 2 and trans._('Şubat') or root.month == 3 and trans._('Mart') or root.month == 4 and trans._('Nisan') or root.month == 5 and trans._('Mayıs') or root.month == 6 and trans._('Haziran') or root.month == 7 and trans._('Temmuz') or root.month == 8 and trans._('Ağustos') or root.month == 9 and trans._('Eylül') or root.month == 10 and trans._('Ekim') or root.month == 11 and trans._('Kasım') or root.month == 12 and trans._('Aralık') or ''), root.year, (root.weekday == 0 and trans._('Pazartesi') or root.weekday == 1 and trans._('Salı') or root.weekday == 2 and trans._('Çarsamba') or root.weekday == 3 and trans._('Perşembe') or root.weekday == 4 and trans._('Cuma') or root.weekday == 0 and trans._('Cumartesi') or root.weekday == 0 and trans._('Pazar') or ''))
 
             GridLayout:
                 id: times
@@ -540,5 +557,9 @@
                 rows: 1
                 padding: 50, 10, 50, 10
 
-                TextInput:
-                    id: record
+                ScrollView:
+                    id: scrlv
+                    TextInput:
+                        id: record
+                        size_hint: 1, None
+                        height: max(self.minimum_height, scrlv.height)

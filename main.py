@@ -4,120 +4,20 @@ from urllib.error import HTTPError
 
 from kivy.app import App
 from kivy.core.window import Window
-from kivy.factory import Factory
 from kivy.lang import Builder
-from kivy.metrics import sp
-from kivy.properties import StringProperty, ListProperty, Clock, BooleanProperty, ObjectProperty, string_types
+from kivy.properties import StringProperty, ListProperty, Clock, NumericProperty
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.checkbox import CheckBox
-from kivy.uix.dropdown import DropDown
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, SlideTransition
 from kivy.utils import get_color_from_hex
 
-from config import DB, find_parent, set_children_color, seconds_converter, WEEKDAYS, MONTHS, _datetime_parser, REPO_FILE
+from config import DB, REPO_FILE, find_parent, set_children_color, seconds_converter, set_color, _datetime_parser, \
+    fetch_selected_city, fetch_cities
 from language import Lang
 from providers import Heroku, CollectApi
 
 trans = Lang('en')
-
-
-class SpinnerOption(ButtonBehavior, Label):
-    pass
-
-class LangSpinner(ButtonBehavior, Label):
-    values = ListProperty()
-    values_dict = {'Turkce': 'tr', 'English': 'en'}
-    text_autoupdate = BooleanProperty(False)
-    option_cls = ObjectProperty(SpinnerOption)
-    dropdown_cls = ObjectProperty(DropDown)
-    is_open = BooleanProperty(False)
-    sync_height = BooleanProperty(False)
-
-    def __init__(self, **kwargs):
-        self._dropdown = None
-        super(LangSpinner, self).__init__(**kwargs)
-        fbind = self.fbind
-        build_dropdown = self._build_dropdown
-        fbind('on_release', self._toggle_dropdown)
-        fbind('dropdown_cls', build_dropdown)
-        fbind('option_cls', build_dropdown)
-        fbind('values', self._update_dropdown)
-        fbind('size', self._update_dropdown_size)
-        fbind('text_autoupdate', self._update_dropdown)
-        build_dropdown()
-
-    def _build_dropdown(self, *largs):
-        if self._dropdown:
-            self._dropdown.unbind(on_select=self._on_dropdown_select)
-            self._dropdown.unbind(on_dismiss=self._close_dropdown)
-            self._dropdown.dismiss()
-            self._dropdown = None
-        cls = self.dropdown_cls
-        if isinstance(cls, string_types):
-            cls = Factory.get(cls)
-        self._dropdown = cls()
-        self._dropdown.bind(on_select=self._on_dropdown_select)
-        self._dropdown.bind(on_dismiss=self._close_dropdown)
-        self._update_dropdown()
-
-    def _update_dropdown_size(self, *largs):
-        if not self.sync_height:
-            return
-        dp = self._dropdown
-        if not dp:
-            return
-
-        container = dp.container
-        if not container:
-            return
-        h = self.height
-        for item in container.children[:]:
-            item.height = h
-
-    def _update_dropdown(self, *largs):
-        dp = self._dropdown
-        cls = self.option_cls
-        values = self.values
-        text_autoupdate = self.text_autoupdate
-        if isinstance(cls, string_types):
-            cls = Factory.get(cls)
-        dp.clear_widgets()
-        for value in values:
-            item = cls(text=value, font_size=sp(15), halign='center')
-            item.height = sp(30)  # self.height if self.sync_height else item.height
-            item.bind(on_release=lambda option: dp.select(option.text))
-            dp.add_widget(item)
-            set_children_color(item.parent, get_color_from_hex('D2D1BE'))
-        self.text = dict(list(map(lambda x: list(reversed(list(x))), self.values_dict.items())))[trans.lang]
-        if text_autoupdate:
-            if values:
-                if not self.text or self.text not in values:
-                    self.text = values[0]
-            else:
-                self.text = ''
-
-    def _toggle_dropdown(self, *largs):
-        if self.values:
-            self.is_open = not self.is_open
-
-    def _close_dropdown(self, *largs):
-        self.is_open = False
-
-    def _on_dropdown_select(self, instance, data, *largs):
-        self.text = data
-        lang = self.values_dict.get(data)
-        trans.switch_lang(lang)
-        DB.store_put('language', lang)
-        DB.store_sync()
-        self.is_open = False
-
-    def on_is_open(self, instance, value):
-        if value:
-            self._dropdown.open(self)
-        else:
-            if self._dropdown.attach_to:
-                self._dropdown.dismiss()
 
 
 class ResetButton(ButtonBehavior, Label):
@@ -129,21 +29,37 @@ class ResetButton(ButtonBehavior, Label):
         self.disabled = True
         self.press_count += 1
         if self.press_count == 1:
-            set_children_color(self.parent, get_color_from_hex('FF6666'))
+            set_color(self, get_color_from_hex('FF6666'))
             Clock.schedule_once(lambda dt: self.check_press(), 1)
         if self.press_count > 1:
             root = find_parent(self, Praying)
-            for key in DB.store_keys():
-                if key.startswith('status'):
-                    DB.delete(key)
+            root.welcome.progressbar.value = 0
+            trans.lang = 'en'
+
+            DB.store_clear()
+
             self.press_count = 0
-            root.check_missed_prays()
-            set_children_color(self.parent, get_color_from_hex('FFFFFF'))
+
+            root.progressbar_path(
+                path=list(reversed([
+                    root.start_progress,
+                    root.switch_lang,
+                    root.fetch_cities,
+                    root.fetch_selected_city,
+                    root.fetch_today_praying_times,
+                    root.check_praying_status,
+                    root.reset_missed_prays,
+                    root.check_missed_prays,
+                ])),
+                per_step=int(1000 / 9)
+            )
+
+            set_color(self, get_color_from_hex('FFFFFF'))
         self.disabled = False
 
     def check_press(self):
         self.press_count = 0
-        set_children_color(self.parent, get_color_from_hex('FFFFFF'))
+        set_color(self, get_color_from_hex('FFFFFF'))
 
 
 class RecordButton(ButtonBehavior, Label):
@@ -216,35 +132,57 @@ class MissedCheckBox(CheckBox):
 
 
 class Praying(ScreenManager):
+    day = NumericProperty()
+    month = NumericProperty()
+    year = NumericProperty()
+    weekday = NumericProperty()
+
     def __init__(self, **kwargs):
         super(Praying, self).__init__(**kwargs)
 
         self.today = datetime.now().date()
-        self.entrance.today.text = '{} {} {}, {}'.format(self.today.day, MONTHS[self.today.month],
-                                                         self.today.year, WEEKDAYS[self.today.weekday()])
+        self.day = self.today.day
+        self.month = self.today.month
+        self.year = self.today.year
+        self.weekday = self.today.weekday()
         self.times = None
+        self.city = None
 
         self.progressbar_path(
-            path=[
+            path=list(reversed([
+                self.fetch_cities,
+                self.fetch_selected_city,
                 self.fetch_today_praying_times,
                 self.check_praying_status,
                 self.check_missed_prays,
                 self.check_counter
-            ]
+            ])),
+            per_step=int(1000 / 6)
         )
 
-    def progressbar_path(self, index=0, path=None):
+    def progressbar_path(self, path=None, per_step=0):
         path = path or []
-        per_step = 1000 / len(path)
         try:
-            path[index]()
+            path.pop()()
         except IndexError:
             self.transition = SlideTransition(direction='left')
             self.current = 'entrance'
             return
         self.welcome.progressbar.value += per_step
 
-        Clock.schedule_once(lambda dt: self.progressbar_path(index + 1, path), .5)
+        Clock.schedule_once(lambda dt: self.progressbar_path(path, per_step), .5)
+
+    def start_progress(self):
+        self.transition = SlideTransition(direction='right')
+        self.current = 'welcome'
+
+    @staticmethod
+    def fetch_cities():
+        fetch_cities()
+
+    def fetch_selected_city(self):
+        self.city = fetch_selected_city()
+        self.entrance.city_selection.set_text()
 
     def fetch_today_praying_times(self):
         record = None
@@ -253,10 +191,11 @@ class Praying(ScreenManager):
         except KeyError:
             for provider in (Heroku(), CollectApi()):
                 try:
-                    record = provider(self.today)
+                    record = provider(self.today, self.city)
                     break
-                except HTTPError:
+                except (HTTPError, IndexError):
                     pass
+
             if record:
                 DB.store_put(str(self.today), record)
                 DB.store_sync()
@@ -298,6 +237,16 @@ class Praying(ScreenManager):
 
         Clock.schedule_once(lambda dt: self.check_praying_status(), .5)
 
+    def reset_missed_prays(self):
+        times = {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None}
+        for time in times:
+            layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
+            button = getattr(layout, '{}_button'.format(time))
+            label = getattr(layout, '{}_count'.format(time))
+            button.active = button.disabled = True
+            label.text = '0'
+            set_children_color(layout, get_color_from_hex('B8D5CD'))
+
     def check_missed_prays(self):
         times = {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None}
         # removable_keys = []
@@ -326,12 +275,16 @@ class Praying(ScreenManager):
         # for key in removable_keys:
         #     DB.store_delete(key)
 
-        DB.store_sync()
+        # DB.store_sync()
 
-    def check_counter(self):
+    def check_counter(self, **kwargs):
         order = ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi']
         now = datetime.now()
-        record = DB.store_get(str(self.today))
+        try:
+            record = DB.store_get(str(self.today))
+        except KeyError:
+            Clock.schedule_once(lambda dt: self.check_counter(), .5)
+            return
         upcoming = None
         current = None
         total_second = 0
@@ -356,6 +309,13 @@ class Praying(ScreenManager):
 
         Clock.schedule_once(lambda dt: self.check_counter(), .5)
 
+    def switch_lang(self, lang=None):
+        lang = lang or trans.lang
+        trans.switch_lang(lang)
+        DB.store_put('language', lang)
+        DB.store_sync()
+        self.entrance.lang_selection.set_text()
+
 
 class PrayingApp(App):
     def __init__(self, **kwargs):
@@ -369,6 +329,8 @@ class PrayingApp(App):
             trans.switch_lang(lang)
         except KeyError:
             pass
+        fetch_cities()
+        fetch_selected_city()
         return Praying()
 
 

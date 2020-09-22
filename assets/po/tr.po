@@ -8,47 +8,123 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-09-20 00:26+0300\n"
+"POT-Creation-Date: 2020-09-22 04:11+0300\n"
 "PO-Revision-Date: 2020-09-19 22:23+0300\n"
 "Last-Translator: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
 "Language-Team: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
 "Language: Turkish\n"
 "MIME-Version: 1.0\n"
-"Content-Type: text/plain; charset=utf-8\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: assets/praying.kv:157 assets/praying.kv:330
+#: assets/praying.kv:140
+msgid "Ocak"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Şubat"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Mart"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Nisan"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Mayıs"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Haziran"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Temmuz"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Ağustos"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Eylül"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Ekim"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Kasım"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Aralık"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Pazartesi"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Salı"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Çarsamba"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Perşembe"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Cuma"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Cumartesi"
+msgstr ""
+
+#: assets/praying.kv:140
+msgid "Pazar"
+msgstr ""
+
+#: assets/praying.kv:158 assets/praying.kv:331
 msgid "Sabah"
 msgstr "Sabah"
 
-#: assets/praying.kv:172 assets/praying.kv:359
+#: assets/praying.kv:173 assets/praying.kv:360
 msgid "Ogle"
 msgstr "Öğle"
 
-#: assets/praying.kv:187 assets/praying.kv:388
+#: assets/praying.kv:188 assets/praying.kv:389
 msgid "Ikindi"
 msgstr "İkindi"
 
-#: assets/praying.kv:202 assets/praying.kv:417
+#: assets/praying.kv:203 assets/praying.kv:418
 msgid "Aksam"
 msgstr "Akşam"
 
-#: assets/praying.kv:217 assets/praying.kv:446
+#: assets/praying.kv:218 assets/praying.kv:447
 msgid "Yatsi"
 msgstr "Yatsı"
 
-#: assets/praying.kv:232 assets/praying.kv:475
+#: assets/praying.kv:233 assets/praying.kv:476
 msgid "Vitr"
 msgstr "Vitr"
 
-#: assets/praying.kv:499
+#: assets/praying.kv:500
 msgid "Sifirla"
 msgstr "Sıfırla"
 
-#: assets/praying.kv:510
+#: assets/praying.kv:511
 msgid "Kayitlar"
 msgstr "Kayıtlar"
 
-#: assets/praying.kv:530
+#: assets/praying.kv:531
 msgid "Geri"
 msgstr "Geri"

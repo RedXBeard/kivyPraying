@@ -6,19 +6,39 @@ from datetime import timedelta
 
 from config import _concat_date_time, _date_parser
 
+ssl._create_default_https_context = ssl._create_unverified_context
+
 
 class BaseProvider(object):
-    def get(self, today):
+    def get(self, today, city):
         raise NotImplementedError
 
-    def __call__(self, today):
-        return self.get(today)
+    def __call__(self, today, city):
+        return self.get(today, city)
 
 
 class Heroku(BaseProvider):
-    def get(self, today):
-        ssl._create_default_https_context = ssl._create_unverified_context
-        f = urllib.request.urlopen('http://ezanvakti.herokuapp.com/vakitler?ilce=9541')
+    @staticmethod
+    def fetch_cities(country):
+        f = urllib.request.urlopen('http://ezanvakti.herokuapp.com/sehirler/{}'.format(country))
+        data = json.loads(f.read().decode('utf-8'))
+        record = []
+        for rec in data:
+            record.append(
+                {'name': rec['SehirAdi'].capitalize(),
+                 'key': rec['SehirAdiEn'].lower(),
+                 'id': rec['SehirID']}
+            )
+        return record
+
+    @staticmethod
+    def fetch_disticts(city):
+        f = urllib.request.urlopen('http://ezanvakti.herokuapp.com/ilceler/{}'.format(city['id']))
+        data = json.loads(f.read().decode('utf-8'))
+        return list(filter(lambda x: x['IlceAdiEn'].lower() == city['key'], data))[0]['IlceID']
+
+    def get(self, today, city):
+        f = urllib.request.urlopen('http://ezanvakti.herokuapp.com/vakitler?ilce={}'.format(self.fetch_disticts(city)))
         data = json.loads(f.read().decode('utf-8'))
         times = list(filter(lambda x: _date_parser(x['MiladiTarihKisa']) == today, data))[0]
         next_day = filter(lambda x: _date_parser(x['MiladiTarihKisa']) == today + timedelta(days=1), data)
@@ -35,15 +55,16 @@ class Heroku(BaseProvider):
 
 
 class CollectApi(BaseProvider):
-    def get(self, today):
-        ssl._create_default_https_context = ssl._create_unverified_context
-        next_day = today + timedelta(days=1)
-        conn = http.client.HTTPSConnection("api.collectapi.com")
-        headers = {
+    def __init__(self):
+        self.headers = {
             'content-type': "application/json",
             'authorization': 'apikey 7lGnm6P6iiycQ9dvxj7z5K:1hxqBVW7UuNkM6X7fPHJGQ'
         }
-        conn.request("GET", "/pray/all?data.city=istanbul", headers=headers)
+
+    def get(self, today, city):
+        next_day = today + timedelta(days=1)
+        conn = http.client.HTTPSConnection("api.collectapi.com")
+        conn.request("GET", "/pray/all?data.city={}".format(city['key']), headers=self.headers)
         res = conn.getresponse()
         data = json.loads(res.read().decode("utf-8"))['result']
         times = dict(list(map(lambda x: list(x.values())[::-1], data)))

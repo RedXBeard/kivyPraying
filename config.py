@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+from urllib.error import HTTPError
 
 from kivy import kivy_home_dir
 from kivy.storage.jsonstore import JsonStore
@@ -8,10 +9,9 @@ from kivy.storage.jsonstore import JsonStore
 def find_parent(cur_class, target_class):
     """find wanted widget from selected or current one"""
     req_class = cur_class
-    target_class_name = str(target_class().__class__).split('.')[1].replace("'>", "")
     while True:
         cls = str(req_class.__class__).split('.')[1].replace("'>", "")
-        if cls == target_class_name:
+        if cls == target_class.__name__:
             break
         elif cls == 'core':
             req_class = None
@@ -52,9 +52,32 @@ def seconds_converter(scnds):
     return list(map(lambda x: str(x).zfill(2), map(int, [hours, minutes, seconds])))
 
 
-WEEKDAYS = ['Pazartesi', 'Salı', 'Çarsamba', 'Perşembe', 'Cuma', 'Cumartesi', 'Pazar']
-MONTHS = ['', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
-          'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık']
+def fetch_cities():
+    from providers import Heroku
+    try:
+        DB.store_get('CITIES')
+    except KeyError:
+        try:
+            cities = Heroku().fetch_cities(2)
+        except HTTPError:
+            cities = []
+        if cities:
+            DB.store_put('CITIES', cities)
+            DB.store_sync()
+
+
+def fetch_selected_city():
+    try:
+        city = DB.store_get('SELECTED_CITIES')
+    except KeyError:
+        city = list(filter(lambda x: x['key'] == 'istanbul', DB.store_get('CITIES')))[0]
+
+        if city:
+            DB.store_put('SELECTED_CITIES', city)
+            DB.store_sync()
+    return city
+
+
 PATH_SEPARATOR = '/'
 if os.path.realpath(__file__).find('\\') != -1:
     PATH_SEPARATOR = '\\'
