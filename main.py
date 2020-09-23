@@ -1,5 +1,6 @@
 import json
-from datetime import datetime
+from copy import copy
+from datetime import datetime, timedelta
 from urllib.error import HTTPError
 
 from kivy.animation import Animation
@@ -352,33 +353,40 @@ class Praying(ScreenManager):
 
     def check_missed_prays(self):
         times = {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None}
-        # removable_keys = []
+        visits = []
         for key in DB.store_keys():
             if key.startswith('status'):
-                rec = list(filter(lambda x: not x[1], DB.store_get(key).items()))
-                for time, _ in rec:
-                    if key.find(str(self.today)) != -1:
-                        if datetime.now() < _datetime_parser(self.times[time][1]):
-                            continue
-                    times.pop(time, None)
-                    layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
-                    button = getattr(layout, '{}_button'.format(time))
-                    label = getattr(layout, '{}_count'.format(time))
-                    button.active = button.disabled = False
-                    button.db_keys.append(key)
-                    label.text = str((label.text and int(label.text) or 0) + 1)
-                    set_children_color(layout, get_color_from_hex('FF6666'))
-                # if not rec:
-                #     removable_keys.append(key)
+                visits.append(datetime.strptime(key.strip('status_'), '%Y-%m-%d').date())
+
+        visits = sorted(visits)
+        d1 = visits and visits[0] or datetime.now().date()
+        d2 = visits and visits[-1] or datetime.now().date()
+        days = set([d1 + timedelta(n) for n in range(1, int((d2 - d1).days))])
+        for day in days.difference(set(visits)):
+            key = 'status_{}'.format(day)
+            DB.store_put(key, copy(times))
+
+        DB.store_sync()
+
+        for day in days:
+            key = 'status_{}'.format(day)
+            rec = list(filter(lambda x: not x[1], DB.store_get(key).items()))
+            for time, _ in rec:
+                if key.find(str(self.today)) != -1:
+                    if datetime.now() < _datetime_parser(self.times[time][1]):
+                        continue
+                times.pop(time, None)
+                layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
+                button = getattr(layout, '{}_button'.format(time))
+                label = getattr(layout, '{}_count'.format(time))
+                button.active = button.disabled = False
+                button.db_keys.append(key)
+                label.text = str((label.text and int(label.text) or 0) + 1)
+                set_children_color(layout, get_color_from_hex('FF6666'))
 
         for time in times:
             layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
             set_children_color(layout, get_color_from_hex('B8D5CD'))
-
-        # for key in removable_keys:
-        #     DB.store_delete(key)
-
-        # DB.store_sync()
 
     def check_counter(self, **kwargs):
         order = ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi']
