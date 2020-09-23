@@ -552,14 +552,23 @@
                 font_size: sp(15)
                 padding: 0, 10
 
-            GridLayout:
-                cols: 1
-                rows: 1
-                padding: 50, 10, 50, 10
+            ScrollView:
+                id: scrlv
+                BoxLayout:
+                    id: record
+                    orientation: 'vertical'
+                    spacing: 5, 5
+                    size_hint: 1, None
+                    height: max(self.minimum_height, scrlv.height)
 
-                ScrollView:
-                    id: scrlv
-                    TextInput:
-                        id: record
-                        size_hint: 1, None
-                        height: max(self.minimum_height, scrlv.height)
+#            GridLayout:
+#                cols: 1
+#                rows: 1
+#                padding: 50, 10, 50, 10
+#
+#                ScrollView:
+#                    id: scrlv
+#                    TextInput:
+#                        id: record
+#                        size_hint: 1, None
+#                        height: max(self.minimum_height, scrlv.height)

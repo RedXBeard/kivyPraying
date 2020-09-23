@@ -104,3 +104,13 @@ def _datetime_parser(rec):
 def _concat_date_time(time, date):
     date = '{}.{}.{}'.format(date.day, date.month, date.year)
     return '{} {}'.format(date, time)
+
+
+COLOR_CODES = {
+    'yellow': (240/255.0, 201/255.0, 117/255.0, 1),
+    'orange': (237/255.0, 165/255.0, 108/255.0, 1),
+    'red': (218/255.0, 130/255.0, 119/255.0, 1),
+    'purple': (176/255.0, 112/255.0, 193/255.0, 1),
+    'blue': (131/255.0, 168/255.0, 240/255.0, 1),
+    'green': (125/255.0, 182/255.0, 140/255.0, 1)
+}

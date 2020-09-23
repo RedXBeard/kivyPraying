@@ -2,22 +2,70 @@ import json
 from datetime import datetime
 from urllib.error import HTTPError
 
+from kivy.animation import Animation
 from kivy.app import App
 from kivy.core.window import Window
 from kivy.lang import Builder
+from kivy.metrics import sp
 from kivy.properties import StringProperty, ListProperty, Clock, NumericProperty
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.checkbox import CheckBox
+from kivy.uix.gridlayout import GridLayout
+from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, SlideTransition
 from kivy.utils import get_color_from_hex
 
 from config import DB, REPO_FILE, find_parent, set_children_color, seconds_converter, set_color, _datetime_parser, \
-    fetch_selected_city, fetch_cities
+    fetch_selected_city, fetch_cities, COLOR_CODES
 from language import Lang
 from providers import Heroku, CollectApi
 
 trans = Lang('en')
+
+
+class Star(Image):
+    def __init__(self, **kwargs):
+        star_color = kwargs.pop('color', None) or COLOR_CODES.get('yellow')
+        super(Star, self).__init__(**kwargs)
+        self.source = 'assets/star.png'
+        self.color = star_color
+
+
+class RecordLineCheckbox(CheckBox):
+    def __init__(self, **kwargs):
+        super(RecordLineCheckbox, self).__init__(**kwargs)
+        self.disabled = True
+        self.size_hint = None, None
+        self.width = sp(40)
+        self.height = sp(40)
+
+
+class RecordLine(GridLayout):
+    def __init__(self, **kwargs):
+        data = kwargs.pop('record')
+
+        super(RecordLine, self).__init__(**kwargs)
+
+        self.cols = 7
+        self.rows = 1
+        self.size_hint_y = None
+        self.height = sp(50)
+        pray_time_label = Label(text=data.get('pray_time'))
+        sabah_checkbox = RecordLineCheckbox(active=bool(data.get('sabah')))
+        ogle_checkbox = RecordLineCheckbox(active=bool(data.get('ogle')))
+        ikindi_checkbox = RecordLineCheckbox(active=bool(data.get('ikindi')))
+        aksam_checkbox = RecordLineCheckbox(active=bool(data.get('aksam')))
+        yatsi_checkbox = RecordLineCheckbox(active=bool(data.get('yatsi')))
+        vitr_checkbox = RecordLineCheckbox(active=bool(data.get('vitr')))
+
+        self.add_widget(pray_time_label)
+        self.add_widget(sabah_checkbox)
+        self.add_widget(ogle_checkbox)
+        self.add_widget(ikindi_checkbox)
+        self.add_widget(aksam_checkbox)
+        self.add_widget(yatsi_checkbox)
+        self.add_widget(vitr_checkbox)
 
 
 class ResetButton(ButtonBehavior, Label):
@@ -67,14 +115,17 @@ class RecordButton(ButtonBehavior, Label):
         root = find_parent(self, Praying)
         root.transition = SlideTransition(direction='left')
         root.current = 'data'
-        try:
-            f = open(REPO_FILE)
-            data = f.read()
-            f.close()
-            data = json.dumps(json.loads(data), sort_keys=True, indent=2)
-        except TypeError:
-            data = 'please click reset button on previous screen'
-        root.data.record.text = data
+        root.data.record.clear_widgets()
+
+        records = []
+        for key in DB.store_keys():
+            if key.startswith('status'):
+                record = {'pray_time': key.strip('status_')}
+                record.update(**DB.store_get(key))
+                records.append(record)
+
+        for rec in sorted(records, key=lambda x: datetime.strptime(x['pray_time'], '%Y-%m-%d'), reverse=True):
+            root.data.record.add_widget(RecordLine(record=rec))
 
 
 class BackButton(ButtonBehavior, Label):
@@ -160,6 +211,8 @@ class Praying(ScreenManager):
             per_step=int(1000 / 6)
         )
 
+        self.reward_success()
+
     def progressbar_path(self, path=None, per_step=0):
         path = path or []
         try:
@@ -170,7 +223,57 @@ class Praying(ScreenManager):
             return
         self.welcome.progressbar.value += per_step
 
-        Clock.schedule_once(lambda dt: self.progressbar_path(path, per_step), .5)
+        Clock.schedule_once(lambda dt: self.progressbar_path(path, per_step), .1)
+
+    def animation_complete(self, animation, widget):
+        self.entrance.remove_widget(widget)
+
+    def reward_success(self):
+        daily = DB.store_exists('DAILY') and DB.store_get('DAILY') or 0
+        weekly = DB.store_exists('WEEKLY') and DB.store_get('WEEKLY') or 0
+        monthly = DB.store_exists('MONTHLY') and DB.store_get('MONTHLY') or 0
+        yearly = DB.store_exists('YEARLY') and DB.store_get('YEARLY') or 0
+
+        count = 0
+        for key in DB.store_keys():
+            if key.startswith('status'):
+                count += not list(filter(lambda x: not x[1], DB.store_get(key).items())) and 1 or 0
+
+        calc_yearly, count = int(count / 365), count % 365
+        calc_monthly, count = int(count / 28), count % 28
+        calc_weekly, count = int(count / 7), count % 7
+        calc_daily = count
+
+        stars = []
+        if calc_yearly > yearly:
+            stars.append(Star(color=COLOR_CODES.get('purple')))
+        if calc_monthly > monthly:
+            stars.append(Star(color=COLOR_CODES.get('red')))
+        if calc_weekly > weekly:
+            stars.append(Star(color=COLOR_CODES.get('orange')))
+        if calc_daily > daily:
+            stars.append(Star(color=COLOR_CODES.get('yellow')))
+
+        self.run_stars(stars)
+
+        # DB.store_put('YEARLY', calc_yearly)
+        # DB.store_put('MONTHLY', calc_monthly)
+        # DB.store_put('WEEKLY', calc_weekly)
+        # DB.store_put('DAILY', calc_daily)
+        # DB.store_sync()
+
+        # Clock.schedule_once(lambda dt: self.reward_success(), .5)
+
+    def run_stars(self, star_set):
+        try:
+            star_widget = star_set.pop()
+            self.entrance.add_widget(star_widget)
+            anim = Animation(pos=(-1 * Window.size[0] / 2, Window.size[1] / 2), t='in_circ', d=1.5)
+            anim.start(star_widget)
+            anim.bind(on_complete=self.animation_complete)
+        except IndexError:
+            return
+        Clock.schedule_once(lambda dt: self.run_stars(star_set), .5)
 
     def start_progress(self):
         self.transition = SlideTransition(direction='right')
