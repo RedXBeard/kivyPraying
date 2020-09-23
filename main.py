@@ -1,4 +1,3 @@
-import json
 from copy import copy
 from datetime import datetime, timedelta
 from urllib.error import HTTPError
@@ -17,7 +16,7 @@ from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, SlideTransition
 from kivy.utils import get_color_from_hex
 
-from config import DB, REPO_FILE, find_parent, set_children_color, seconds_converter, set_color, _datetime_parser, \
+from config import DB, find_parent, set_children_color, seconds_converter, set_color, _datetime_parser, \
     fetch_selected_city, fetch_cities, COLOR_CODES
 from language import Lang
 from providers import Heroku, CollectApi
@@ -38,7 +37,7 @@ class RecordLineCheckbox(CheckBox):
         super(RecordLineCheckbox, self).__init__(**kwargs)
         self.disabled = True
         self.size_hint = None, None
-        self.width = sp(40)
+        self.width = sp(25)
         self.height = sp(40)
 
 
@@ -52,7 +51,7 @@ class RecordLine(GridLayout):
         self.rows = 1
         self.size_hint_y = None
         self.height = sp(50)
-        pray_time_label = Label(text=data.get('pray_time'))
+        pray_time_label = Label(text=data.get('pray_time'), font_size=sp(15), padding=(20, 20))
         sabah_checkbox = RecordLineCheckbox(active=bool(data.get('sabah')))
         ogle_checkbox = RecordLineCheckbox(active=bool(data.get('ogle')))
         ikindi_checkbox = RecordLineCheckbox(active=bool(data.get('ikindi')))
