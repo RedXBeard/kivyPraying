@@ -14,6 +14,7 @@ from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, SlideTransition
+from kivy.uix.widget import Widget
 from kivy.utils import get_color_from_hex
 
 from config import DB, find_parent, set_children_color, seconds_converter, set_color, _datetime_parser, \
@@ -126,6 +127,7 @@ class RecordButton(ButtonBehavior, Label):
 
         for rec in sorted(records, key=lambda x: datetime.strptime(x['pray_time'], '%Y-%m-%d'), reverse=True):
             root.data.record.add_widget(RecordLine(record=rec))
+        root.data.record.add_widget(Widget())
 
 
 class BackButton(ButtonBehavior, Label):
