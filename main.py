@@ -118,16 +118,7 @@ class RecordButton(ButtonBehavior, Label):
         root.current = 'data'
         root.data.record.clear_widgets()
 
-        records = []
-        for key in DB.store_keys():
-            if key.startswith('status'):
-                record = {'pray_time': key.strip('status_')}
-                record.update(**DB.store_get(key))
-                records.append(record)
-
-        for rec in sorted(records, key=lambda x: datetime.strptime(x['pray_time'], '%Y-%m-%d'), reverse=True):
-            root.data.record.add_widget(RecordLine(record=rec))
-        root.data.record.add_widget(Widget())
+        root.load_more_records()
 
 
 class BackButton(ButtonBehavior, Label):
@@ -258,13 +249,13 @@ class Praying(ScreenManager):
 
         self.run_stars(stars)
 
-        # DB.store_put('YEARLY', calc_yearly)
-        # DB.store_put('MONTHLY', calc_monthly)
-        # DB.store_put('WEEKLY', calc_weekly)
-        # DB.store_put('DAILY', calc_daily)
-        # DB.store_sync()
+        DB.store_put('YEARLY', calc_yearly)
+        DB.store_put('MONTHLY', calc_monthly)
+        DB.store_put('WEEKLY', calc_weekly)
+        DB.store_put('DAILY', calc_daily)
+        DB.store_sync()
 
-        # Clock.schedule_once(lambda dt: self.reward_success(), .5)
+        Clock.schedule_once(lambda dt: self.reward_success(), .5)
 
     def run_stars(self, star_set):
         try:
@@ -368,7 +359,7 @@ class Praying(ScreenManager):
             DB.store_put(key, copy(times))
 
         DB.store_sync()
-
+        days = [d1] + list(days) + [d2]
         for day in days:
             key = 'status_{}'.format(day)
             rec = list(filter(lambda x: not x[1], DB.store_get(key).items()))
@@ -420,6 +411,26 @@ class Praying(ScreenManager):
         self.entrance.info.seconds.text = seconds
 
         Clock.schedule_once(lambda dt: self.check_counter(), .5)
+
+    def load_more_records(self):
+        for child in self.data.record.children:
+            if child.__class__.__name__ == 'Widget':
+                self.data.record.remove_widget(child)
+                break
+
+        existed_lines = len(self.data.record.children)
+
+        records = []
+        for key in DB.store_keys():
+            if key.startswith('status'):
+                record = {'pray_time': key.strip('status_')}
+                record.update(**DB.store_get(key))
+                records.append(record)
+
+        records = sorted(records, key=lambda x: datetime.strptime(x['pray_time'], '%Y-%m-%d'), reverse=True)
+        for rec in records[existed_lines:existed_lines + 10]:
+            self.data.record.add_widget(RecordLine(record=rec))
+        self.data.record.add_widget(Widget())
 
     def switch_lang(self, lang=None):
         lang = lang or trans.lang
