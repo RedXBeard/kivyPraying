@@ -35,6 +35,32 @@
     height: sp(40)
     font_size: sp(20)
 
+<RecordStar>
+    canvas.before:
+        Color:
+            rgba: get_color_from_hex('ffffff')
+        Rectangle:
+            pos: self.pos[0], self.pos[1]+sp(25)/2
+            size: self.size[0], self.size[1]-sp(25)
+        Rectangle:
+            pos: self.pos[0]+sp(25)/2, self.pos[1]
+            size: self.size[0]-sp(25), self.size[1]
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0], self.pos[1]
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0], self.pos[1]+self.height-sp(25)
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0]+self.width-sp(25), self.pos[1]
+        Ellipse:
+            size: sp(25), sp(25)
+            pos: self.pos[0]+self.width-sp(25), self.pos[1]+self.height-sp(25)
+    size_hint_y: None
+    height: sp(40)
+    padding: 20, 15
+            
 <CheckBox>
     canvas.before:
         Color:
@@ -537,10 +563,11 @@
         id: data
         name: 'data'
         record: record
+        stars: stars
 
         GridLayout:
             cols: 1
-            rows: 2
+            rows: 3
             padding: 10, 10, 10, 10
 
             BackButton:
@@ -551,7 +578,15 @@
                 height: sp(30)
                 font_size: sp(15)
                 padding: 0, 10
-
+            
+            BoxLayout:
+                id: stars
+                orientation: 'horizontal'
+                spacing: 5, 5
+                size_hint: 1, None
+                height: sp(60)
+                spacing: sp(20)
+                
             ScrollView:
                 id: scrlv
                 on_scroll_stop: root.load_more_records()

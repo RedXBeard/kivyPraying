@@ -31,6 +31,19 @@ class Star(Image):
         super(Star, self).__init__(**kwargs)
         self.source = 'assets/star.png'
         self.color = star_color
+        self.valign = 'center'
+
+
+class RecordStar(GridLayout):
+    def __init__(self, **kwargs):
+        text = kwargs.pop('text')
+        color = kwargs.pop('color')
+        super(RecordStar, self).__init__(cols=2, rows=1, **kwargs)
+
+        label = Label(text=text, padding=(0, 0), height=sp(20))
+        star = Star(color=color, size_hint=(None, None), width=sp(20), height=sp(20))
+        self.add_widget(label)
+        self.add_widget(star)
 
 
 class RecordLineCheckbox(CheckBox):
@@ -117,7 +130,9 @@ class RecordButton(ButtonBehavior, Label):
         root.transition = SlideTransition(direction='left')
         root.current = 'data'
         root.data.record.clear_widgets()
+        root.data.stars.clear_widgets()
 
+        root.load_stars()
         root.load_more_records()
 
 
@@ -411,6 +426,25 @@ class Praying(ScreenManager):
         self.entrance.info.seconds.text = seconds
 
         Clock.schedule_once(lambda dt: self.check_counter(), .5)
+
+    def load_stars(self):
+        daily = DB.store_exists('DAILY') and DB.store_get('DAILY') or 0
+        weekly = DB.store_exists('WEEKLY') and DB.store_get('WEEKLY') or 0
+        monthly = DB.store_exists('MONTHLY') and DB.store_get('MONTHLY') or 0
+        yearly = DB.store_exists('YEARLY') and DB.store_get('YEARLY') or 0
+
+        self.data.stars.add_widget(
+            RecordStar(text=str(daily), color=COLOR_CODES.get('yellow'))
+        )
+        self.data.stars.add_widget(
+            RecordStar(text=str(weekly), color=COLOR_CODES.get('orange'))
+        )
+        self.data.stars.add_widget(
+            RecordStar(text=str(monthly), color=COLOR_CODES.get('red'))
+        )
+        self.data.stars.add_widget(
+            RecordStar(text=str(yearly), color=COLOR_CODES.get('purple'))
+        )
 
     def load_more_records(self):
         for child in self.data.record.children:
