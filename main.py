@@ -1,3 +1,4 @@
+import re
 from copy import copy
 from datetime import datetime, timedelta
 from urllib.error import HTTPError
@@ -10,10 +11,12 @@ from kivy.metrics import sp
 from kivy.properties import StringProperty, ListProperty, Clock, NumericProperty
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.checkbox import CheckBox
+from kivy.uix.floatlayout import FloatLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.image import Image
 from kivy.uix.label import Label
 from kivy.uix.screenmanager import ScreenManager, SlideTransition
+from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.utils import get_color_from_hex
 
@@ -188,6 +191,85 @@ class MissedCheckBox(CheckBox):
             label.text = ''
             self.disabled = True
             set_children_color(self.parent, get_color_from_hex('B8D5CD'))
+
+
+class NewDateButton(ButtonBehavior, Label):
+    def _clear_widgets(self):
+        root = find_parent(self, Praying)
+        remove_set = []
+        for child in root.data.children:
+            if child.__class__ == DateLine:
+                remove_set.append(child)
+            if child.__class__ == Image and child.source == 'assets/dark_trans.png':
+                remove_set.append(child)
+        for child in remove_set:
+            root.data.remove_widget(child)
+
+    def _refresh(self):
+        root = find_parent(self, Praying)
+        root.progressbar_path(
+            path=list(reversed([
+                root.start_progress,
+                root.fetch_today_praying_times,
+                root.check_praying_status,
+                root.reset_missed_prays,
+                root.check_missed_prays,
+            ])),
+            per_step=int(1000 / 9)
+        )
+        self._clear_widgets()
+
+    def _new_record(self):
+        root = find_parent(self, Praying)
+        trans_image = Image(source='assets/dark_trans.png', allow_stretch=True, keep_ratio=False)
+        root.data.add_widget(trans_image)
+        root.data.add_widget(DateLine())
+
+    def _add_new_record(self):
+        day, month, year = self.day.text, self.month.values.index(self.month.text) + 1, self.year.text
+
+        try:
+            date = datetime(*list(map(int, (year, month, day)))).date()
+        except ValueError:
+            set_color(self.day, get_color_from_hex('FF6666'))
+            return
+
+        key = 'status_{}'.format(date)
+        if not DB.store_exists(key):
+            DB.store_put(key, {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None})
+            DB.store_sync()
+
+        self._refresh()
+
+    def on_press(self):
+        if self.name == 'new_record':
+            self._new_record()
+        if self.name == 'new_record_add':
+            self._add_new_record()
+        if self.name == 'new_record_cancel':
+            self._clear_widgets()
+
+
+class NewDateTextInput(TextInput):
+    def time_check(self, text):
+        if self.name == 'day':
+            return int(text.ljust(2, '0')) <= 31
+        if self.name == 'year':
+            return int(text.ljust(4, '0')) <= datetime.now().year
+
+    def insert_text(self, substring, from_undo=False):
+        set_color(self, get_color_from_hex('FFFFFF'))
+        if substring.isdigit() and self.time_check(self.text + substring):
+            return super(NewDateTextInput, self).insert_text(substring, from_undo=from_undo)
+        return super(NewDateTextInput, self).insert_text('', from_undo=from_undo)
+
+    def do_backspace(self, from_undo=False, mode='bkspc'):
+        set_color(self, get_color_from_hex('FFFFFF'))
+        return super(NewDateTextInput, self).do_backspace(from_undo=from_undo, mode=mode)
+
+
+class DateLine(FloatLayout):
+    pass
 
 
 class Praying(ScreenManager):

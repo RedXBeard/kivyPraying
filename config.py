@@ -21,21 +21,29 @@ def find_parent(cur_class, target_class):
     return req_class
 
 
-def get_color(obj):
+def get_colors(obj):
     u"""Color of widget returns."""
+    obj_colors = []
     try:
-        obj_color = list(filter(lambda x: str(x).find('Color') != -1, obj.canvas.before.children))[0]
+        obj_colors.append(list(filter(lambda x: str(x).find('Color') != -1, obj.canvas.before.children))[0])
     except IndexError:
-        obj_color = None
-    return obj_color
+        pass
+
+    try:
+        obj_colors.append(list(filter(lambda x: str(x).find('Color') != -1, obj.canvas.after.children))[0])
+    except IndexError:
+        pass
+
+    return obj_colors
 
 
 def set_color(obj, color):
-    obj_color = get_color(obj)
-    try:
-        obj_color.rgba = color
-    except AttributeError:
-        pass
+    obj_colors = get_colors(obj)
+    for obj_color in obj_colors:
+        try:
+            obj_color.rgba = color
+        except AttributeError:
+            pass
 
 
 def set_children_color(obj, color):

@@ -1,5 +1,6 @@
 #:import get_color_from_hex kivy.utils.get_color_from_hex
 #:import LangSpinner spinners.LangSpinner
+#:import MonthSpinner spinners.MonthSpinner
 #:import trans __main__.trans
 
 <Label>
@@ -84,8 +85,107 @@
             size: sp(25), sp(25)
             pos: self.pos[0]+self.width-sp(25), self.pos[1]+self.height-sp(25)
 
+<NewDateTextInput>
+    canvas.after:
+        Color:
+            rgba: get_color_from_hex('#ffffff')
+        Rectangle:
+            pos: self.pos[0]-sp(20)/2, self.pos[1]+sp(20)/2
+            size: sp(20), sp(10)
+        Rectangle:
+            pos: self.pos[0]+self.width-sp(20)/2, self.pos[1]+sp(20)/2
+            size: sp(20), sp(10)
+        Ellipse:
+            size: sp(20), sp(20)
+            pos: self.pos[0]-sp(20)/2, self.pos[1]
+        Ellipse:
+            size: sp(20), sp(20)
+            pos: self.pos[0]-sp(20)/2, self.pos[1]+self.height-sp(20)
+        Ellipse:
+            size: sp(20), sp(20)
+            pos: self.pos[0]+self.width-sp(20)/2, self.pos[1]
+        Ellipse:
+            size: sp(20), sp(20)
+            pos: self.pos[0]+self.width-sp(20)/2, self.pos[1]+self.height-sp(20)
+    text: ''
+    size_hint_y: None
+    padding: sp(20)/2, 15, 15, 15
+    height: sp(30)
+    multiline: False
+    foreground_color: 0, 0, 0, 1
+    background_color: 1, 1, 1, 1
+    cursor_color: get_color_from_hex('#000000')
+    background_disabled_normal: ""
+    background_normal: ""
+    background_active: ""
+
 <GridLayout>
     spacing: 15, 15
+
+<DateLine>
+    GridLayout
+        cols: 3
+        rows: 1
+        padding: 50, 30, 50, 30
+        spacing: 30, 30
+
+        pos_hint: {'center_y': .2}
+
+        NewDateTextInput:
+            id: day
+            name: 'day'
+            size_hint_x: .2
+            hint_text: trans._('Gün')
+
+        MonthSpinner:
+            id: month
+            values: trans._('Ocak'), trans._('Şubat'), trans._('Mart'), trans._('Nisan'), trans._('Mayıs'), trans._('Haziran'), trans._('Temmuz'), trans._('Ağustos'), trans._('Eylül'), trans._('Ekim'), trans._('Kasım'), trans._('Aralık')
+            size_hint_y: None
+            height: sp(30)
+            sync_height: True
+            halign: 'center'
+            font_size: sp(15)
+            text_autoupdate: True
+
+        NewDateTextInput:
+            id: year
+            name: 'year'
+            size_hint_x: .2
+            hint_text: trans._('Yıl')
+
+    GridLayout
+        cols: 3
+        rows: 1
+        padding: 30, 30, 30, 30
+        spacing: 30, 30
+        pos_hint: {'center_y': .13}
+        NewDateButton:
+            text: trans._('İptal')
+            name: 'new_record_cancel'
+            halign: 'center'
+            size_hint_y: None
+            height: sp(30)
+            font_size: sp(15)
+            padding: 0, 10
+            size_hint_x: .2
+
+        Widget:
+            size_hint_y: None
+            height: sp(30)
+
+        NewDateButton:
+            month: month
+            year: year
+            day: day
+            text: trans._('Ekle')
+            name: 'new_record_add'
+            halign: 'center'
+            size_hint_y: None
+            height: sp(30)
+            font_size: sp(15)
+            padding: 0, 10
+            size_hint_x: .2
+
 
 <Praying>
     welcome: welcome
@@ -570,14 +670,32 @@
             rows: 3
             padding: 10, 10, 10, 10
 
-            BackButton:
-                text: trans._('Geri')
-                halign: 'center'
-                size_hint_x: None
-                width: sp(60)
-                height: sp(30)
-                font_size: sp(15)
-                padding: 0, 10
+            GridLayout:
+                cols: 3
+                rows: 1
+                size_hint_y: None
+                height: sp(40)
+
+                BackButton:
+                    text: trans._('Geri')
+                    halign: 'center'
+                    size_hint_x: None
+                    width: sp(60)
+                    height: sp(30)
+                    font_size: sp(15)
+                    padding: 0, 10
+
+                Widget:
+
+                NewDateButton:
+                    text: trans._('Kayıt Ekle')
+                    name: 'new_record'
+                    halign: 'center'
+                    size_hint_x: None
+                    width: sp(120)
+                    height: sp(30)
+                    font_size: sp(15)
+                    padding: 0, 10
             
             BoxLayout:
                 id: stars

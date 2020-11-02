@@ -157,3 +157,8 @@ class CitySpinner(CustomSpinner):
             ])),
             per_step=int(1000 / 6)
         )
+
+
+class MonthSpinner(CustomSpinner):
+    def set_text(self):
+        return ''
