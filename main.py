@@ -1,4 +1,3 @@
-import re
 from copy import copy
 from datetime import datetime, timedelta
 from urllib.error import HTTPError
@@ -253,7 +252,7 @@ class NewDateButton(ButtonBehavior, Label):
 class NewDateTextInput(TextInput):
     def time_check(self, text):
         if self.name == 'day':
-            return int(text.ljust(2, '0')) <= 31
+            return int(text) <= 31
         if self.name == 'year':
             return int(text.ljust(4, '0')) <= datetime.now().year
 

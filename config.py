@@ -92,7 +92,7 @@ if os.path.realpath(__file__).find('\\') != -1:
 
 PROJECT_PATH = PATH_SEPARATOR.join(os.path.realpath(__file__).split(PATH_SEPARATOR)[:-1])
 
-REPO_FILE = "{0}{1}.kivy-praying{1}praying".format(kivy_home_dir.rstrip(), PATH_SEPARATOR)
+REPO_FILE = "{0}{1}.kivy-praying{1}praying1".format(kivy_home_dir.rstrip(), PATH_SEPARATOR)
 
 directory = os.path.dirname(REPO_FILE)
 if not os.path.exists(directory):
