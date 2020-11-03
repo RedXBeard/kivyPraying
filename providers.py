@@ -33,9 +33,9 @@ class Heroku(BaseProvider):
 
     @staticmethod
     def fetch_disticts(city):
-        f = urllib.request.urlopen('http://ezanvakti.herokuapp.com/ilceler/{}'.format(city['id']))
+        f = urllib.request.urlopen('http://ezanvakti.herokuapp.com/ilceler/{}'.format(city.id))
         data = json.loads(f.read().decode('utf-8'))
-        return list(filter(lambda x: x['IlceAdiEn'].lower() == city['key'], data))[0]['IlceID']
+        return list(filter(lambda x: x['IlceAdiEn'].lower() == city.city_key, data))[0]['IlceID']
 
     def get(self, today, city):
         f = urllib.request.urlopen('http://ezanvakti.herokuapp.com/vakitler?ilce={}'.format(self.fetch_disticts(city)))

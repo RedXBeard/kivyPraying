@@ -6,8 +6,9 @@ from kivy.uix.dropdown import DropDown
 from kivy.uix.label import Label
 from kivy.utils import get_color_from_hex
 
-from config import set_children_color, find_parent, DB
+from config import set_children_color, find_parent
 from main import trans
+from models import Language, City
 
 
 class SpinnerOption(ButtonBehavior, Label):
@@ -112,8 +113,8 @@ class LangSpinner(CustomSpinner):
 
     def set_text(self):
         try:
-            lang = DB.store_get('language')
-        except KeyError:
+            lang = Language.get(selected=True).lang
+        except AttributeError:
             lang = trans.lang
         self.text = dict(list(map(lambda x: list(reversed(list(x))), self.values_dict.items())))[lang]
 
@@ -127,22 +128,19 @@ class LangSpinner(CustomSpinner):
 class CitySpinner(CustomSpinner):
     def __init__(self, **kwargs):
         super(CitySpinner, self).__init__(**kwargs)
-        self.values_list = DB.store_get('CITIES')
-        self.values = sorted(list(map(lambda x: x['name'], self.values_list)))
+        self.values = sorted(list(map(lambda x: x.name, City.list())))
 
     def set_text(self):
-        self.text = DB.store_get('SELECTED_CITIES')['name']
+        self.text = City.get(selected=True).name
 
     def _on_dropdown_select(self, instance, data, *largs):
         from main import Praying
         super(CitySpinner, self)._on_dropdown_select(instance=instance, data=data, *largs)
-        city = list(filter(lambda x: x['name'] == data, DB.store_get('CITIES')))[0]
-
         root = find_parent(self, Praying)
-
-        DB.store_put('SELECTED_CITIES', city)
-        DB.store_delete(str(root.today))
-        DB.store_sync()
+        
+        for city in City.list():
+            selected = city.name == data
+            City.update(city, selected=selected)
 
         root.welcome.progressbar.value = 0
 

@@ -1,9 +1,7 @@
-import os
 from datetime import datetime
 from urllib.error import HTTPError
 
-from kivy import kivy_home_dir
-from kivy.storage.jsonstore import JsonStore
+from models import City
 
 
 def find_parent(cur_class, target_class):
@@ -62,43 +60,30 @@ def seconds_converter(scnds):
 
 def fetch_cities():
     from providers import Heroku
-    try:
-        DB.store_get('CITIES')
-    except KeyError:
+
+    cities = City.list()
+    if not cities:
         try:
             cities = Heroku().fetch_cities(2)
         except HTTPError:
             cities = []
-        if cities:
-            DB.store_put('CITIES', cities)
-            DB.store_sync()
+            
+        for city in cities:
+            City.create(name=city['name'], city_key=city['key'], id=city['id'])
+    cities = City.list()
+    return cities
+
 
 
 def fetch_selected_city():
-    try:
-        city = DB.store_get('SELECTED_CITIES')
-    except KeyError:
-        city = list(filter(lambda x: x['key'] == 'istanbul', DB.store_get('CITIES')))[0]
+    city = City.get(selected=True)
+    if not city:
+        city = City.get(city_key='istanbul')
+        for db_city in City.list():
+            selected = db_city.pk == city.pk
+            City.update(db_city, selected=selected)
 
-        if city:
-            DB.store_put('SELECTED_CITIES', city)
-            DB.store_sync()
     return city
-
-
-PATH_SEPARATOR = '/'
-if os.path.realpath(__file__).find('\\') != -1:
-    PATH_SEPARATOR = '\\'
-
-PROJECT_PATH = PATH_SEPARATOR.join(os.path.realpath(__file__).split(PATH_SEPARATOR)[:-1])
-
-REPO_FILE = "{0}{1}.kivy-praying{1}praying1".format(kivy_home_dir.rstrip(), PATH_SEPARATOR)
-
-directory = os.path.dirname(REPO_FILE)
-if not os.path.exists(directory):
-    os.makedirs(directory)
-DB = JsonStore(REPO_FILE)
-DB.store_sync()
 
 
 def _date_parser(rec):
@@ -115,10 +100,10 @@ def _concat_date_time(time, date):
 
 
 COLOR_CODES = {
-    'yellow': (240/255.0, 201/255.0, 117/255.0, 1),
-    'orange': (237/255.0, 165/255.0, 108/255.0, 1),
-    'red': (218/255.0, 130/255.0, 119/255.0, 1),
-    'purple': (176/255.0, 112/255.0, 193/255.0, 1),
-    'blue': (131/255.0, 168/255.0, 240/255.0, 1),
-    'green': (125/255.0, 182/255.0, 140/255.0, 1)
+    'yellow': (240 / 255.0, 201 / 255.0, 117 / 255.0, 1),
+    'orange': (237 / 255.0, 165 / 255.0, 108 / 255.0, 1),
+    'red': (218 / 255.0, 130 / 255.0, 119 / 255.0, 1),
+    'purple': (176 / 255.0, 112 / 255.0, 193 / 255.0, 1),
+    'blue': (131 / 255.0, 168 / 255.0, 240 / 255.0, 1),
+    'green': (125 / 255.0, 182 / 255.0, 140 / 255.0, 1)
 }

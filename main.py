@@ -19,10 +19,12 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.utils import get_color_from_hex
 
-from config import DB, find_parent, set_children_color, seconds_converter, set_color, _datetime_parser, \
-    fetch_selected_city, fetch_cities, COLOR_CODES
+from config import find_parent, set_children_color, seconds_converter, set_color, _datetime_parser, \
+    fetch_selected_city, fetch_cities, COLOR_CODES, _date_parser
 from language import Lang
 from providers import Heroku, CollectApi
+from storage import SQliteDB
+from models import City, Time, Status, Language, Reward
 
 trans = Lang('en')
 
@@ -100,16 +102,13 @@ class ResetButton(ButtonBehavior, Label):
             root.welcome.progressbar.value = 0
             trans.lang = 'en'
 
-            DB.store_clear()
+            Status.delete()
 
             self.press_count = 0
 
             root.progressbar_path(
                 path=list(reversed([
                     root.start_progress,
-                    root.switch_lang,
-                    root.fetch_cities,
-                    root.fetch_selected_city,
                     root.fetch_today_praying_times,
                     root.check_praying_status,
                     root.reset_missed_prays,
@@ -153,11 +152,8 @@ class PrayedCheckBox(CheckBox):
 
         self.disabled = True
         root = find_parent(self, Praying)
-        key = 'status_{}'.format(root.today)
-        record = DB.store_get(key)
-        record[self.name] = str(datetime.now())
-        DB.store_put(key, record)
-        DB.store_sync()
+        status = Status.get(date=root.today, time_name=self.name)
+        Status.update(status, is_prayed=True)
 
 
 class MissedCheckBox(CheckBox):
@@ -174,10 +170,8 @@ class MissedCheckBox(CheckBox):
         time = self.name
         key = self.db_keys.pop()
 
-        record = DB.store_get(key)
-        record[time] = str(datetime.now())
-        DB.store_put(key, record)
-        DB.store_sync()
+        status = Status.get(pk=key)
+        Status.update(status, is_prayed=True)
 
         layout = getattr(root.entrance.missed, 'missed_{}'.format(time))
         label = getattr(layout, '{}_count'.format(time))
@@ -232,11 +226,9 @@ class NewDateButton(ButtonBehavior, Label):
         except ValueError:
             set_color(self.day, get_color_from_hex('FF6666'))
             return
-
-        key = 'status_{}'.format(date)
-        if not DB.store_exists(key):
-            DB.store_put(key, {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None})
-            DB.store_sync()
+        
+        for time in ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi', 'vitr']:
+            Status.create(date=date, time_name=time)
 
         self._refresh()
 
@@ -293,7 +285,7 @@ class Praying(ScreenManager):
                 self.fetch_cities,
                 self.fetch_selected_city,
                 self.fetch_today_praying_times,
-                self.check_praying_status,
+                self.check_praying_status,  # hold
                 self.check_missed_prays,
                 self.check_counter
             ])),
@@ -318,38 +310,34 @@ class Praying(ScreenManager):
         self.entrance.remove_widget(widget)
 
     def reward_success(self):
-        daily = DB.store_exists('DAILY') and DB.store_get('DAILY') or 0
-        weekly = DB.store_exists('WEEKLY') and DB.store_get('WEEKLY') or 0
-        monthly = DB.store_exists('MONTHLY') and DB.store_get('MONTHLY') or 0
-        yearly = DB.store_exists('YEARLY') and DB.store_get('YEARLY') or 0
+        daily = Reward.get(name='daily')
+        weekly = Reward.get(name='weekly')
+        monthly = Reward.get(name='monthly')
+        yearly = Reward.get(name='yearly')
 
-        count = 0
-        for key in DB.store_keys():
-            if key.startswith('status'):
-                count += not list(filter(lambda x: not x[1], DB.store_get(key).items())) and 1 or 0
+        count = len(Status.list(is_prayed=True))
 
-        calc_yearly, count = int(count / 365), count % 365
-        calc_monthly, count = int(count / 28), count % 28
-        calc_weekly, count = int(count / 7), count % 7
-        calc_daily = count
+        calc_yearly, count = int(count / (365 * 6)), count % (365 * 6)
+        calc_monthly, count = int(count / (28 * 6)), count % (28 * 6)
+        calc_weekly, count = int(count / (7 * 6)), count % (7 * 6)
+        calc_daily, count = int(count / (1 * 6)), count % (1 * 6)
 
         stars = []
-        if calc_yearly > yearly:
+        if calc_yearly > yearly.count:
             stars.append(Star(color=COLOR_CODES.get('purple')))
-        if calc_monthly > monthly:
+        if calc_monthly > monthly.count:
             stars.append(Star(color=COLOR_CODES.get('red')))
-        if calc_weekly > weekly:
+        if calc_weekly > weekly.count:
             stars.append(Star(color=COLOR_CODES.get('orange')))
-        if calc_daily > daily:
+        if calc_daily > daily.count:
             stars.append(Star(color=COLOR_CODES.get('yellow')))
 
         self.run_stars(stars)
-
-        DB.store_put('YEARLY', calc_yearly)
-        DB.store_put('MONTHLY', calc_monthly)
-        DB.store_put('WEEKLY', calc_weekly)
-        DB.store_put('DAILY', calc_daily)
-        DB.store_sync()
+        
+        Reward.update(daily, count=calc_daily)
+        Reward.update(weekly, count=calc_weekly)
+        Reward.update(monthly, count=calc_monthly)
+        Reward.update(yearly, count=calc_yearly)
 
         Clock.schedule_once(lambda dt: self.reward_success(), .5)
 
@@ -377,10 +365,11 @@ class Praying(ScreenManager):
         self.entrance.city_selection.set_text()
 
     def fetch_today_praying_times(self):
-        record = None
-        try:
-            record = DB.store_get(str(self.today))
-        except KeyError:
+        record = {}   
+        city = City.get(selected=True)
+        times = Time.list(date=self.today, city_id=city.pk)
+        
+        if not times:
             for provider in (Heroku(), CollectApi()):
                 try:
                     record = provider(self.today, self.city)
@@ -388,44 +377,41 @@ class Praying(ScreenManager):
                 except (HTTPError, IndexError):
                     pass
 
-            if record:
-                DB.store_put(str(self.today), record)
-                DB.store_sync()
-        self.times = record
+            for time in record.items():
+                Time.create(city_id=city.pk, time_name=time[0], from_time=time[1][0], to_time=time[1][1], date=self.today)
+                    
+        self.times = Time.list(date=self.today, city_id=city.pk)
 
     def check_praying_status(self):
-        key = 'status_{}'.format(self.today)
-        try:
-            record = DB.store_get(key)
-        except KeyError:
-            record = {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None}
+        record = Status.get(data=self.today)
+        if not record:
+            for time_name in ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi', 'vitr']:
+                Status.create(time_name=time_name, date=self.today)
+            record = Status.get(data=self.today)
 
         update = False
-        for pray_name, pray_slot in self.times.items():
-            if record[pray_name]:  # Kilindi
-                button = getattr(self.entrance, pray_name)
+        for pray_time in self.times:
+            time_name = pray_time.time_name
+            if Status.get(data=self.today, time_name=time_name).is_prayed:  # Kilindi
+                button = getattr(self.entrance, time_name)
                 button.active = button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('B8D5CD'))
                 update = True
-            elif datetime.now() > _datetime_parser(pray_slot[1]):  # Kacirdi
-                button = getattr(self.entrance, pray_name)
+            elif datetime.now() > _datetime_parser(pray_time.to_time):  # Kacirdi
+                button = getattr(self.entrance, time_name)
                 button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('FF6666'))
                 update = True
-            elif datetime.now() < _datetime_parser(pray_slot[0]):  # daha var
-                button = getattr(self.entrance, pray_name)
+            elif datetime.now() < _datetime_parser(pray_time.from_time):  # daha var
+                button = getattr(self.entrance, time_name)
                 button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('D2D1BE'))
                 update = True
             else:  # Zaman var
-                button = getattr(self.entrance, pray_name)
-                button.disabled = False
+                button = getattr(self.entrance, time_name)
+                button.disabled = button.active = False
                 set_children_color(button.parent, get_color_from_hex('FFFFFF'))
                 update = True
-
-        if update:
-            DB.store_put(key, record)
-            DB.store_sync()
 
         Clock.schedule_once(lambda dt: self.check_praying_status(), .5)
 
@@ -441,36 +427,32 @@ class Praying(ScreenManager):
 
     def check_missed_prays(self):
         times = {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None}
-        visits = []
-        for key in DB.store_keys():
-            if key.startswith('status'):
-                visits.append(datetime.strptime(key.strip('status_'), '%Y-%m-%d').date())
+        visits = list(map(lambda x: datetime.strptime(x.date, '%Y-%m-%d'), set(filter(lambda x: x.date, Status.list()))))
 
         visits = sorted(visits)
         d1 = visits and visits[0] or datetime.now().date()
         d2 = visits and visits[-1] or datetime.now().date()
         days = set([d1 + timedelta(n) for n in range(1, int((d2 - d1).days))])
         for day in days.difference(set(visits)):
-            key = 'status_{}'.format(day)
-            DB.store_put(key, copy(times))
+            for time in times:
+                Status.create(time_name=time, date=day)
 
-        DB.store_sync()
-        days = [d1] + list(days) + [d2]
-        for day in days:
-            key = 'status_{}'.format(day)
-            rec = list(filter(lambda x: not x[1], DB.store_get(key).items()))
-            for time, _ in rec:
-                if key.find(str(self.today)) != -1:
-                    if datetime.now() < _datetime_parser(self.times[time][1]):
-                        continue
-                times.pop(time, None)
-                layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
-                button = getattr(layout, '{}_button'.format(time))
-                label = getattr(layout, '{}_count'.format(time))
-                button.active = button.disabled = False
-                button.db_keys.append(key)
-                label.text = str((label.text and int(label.text) or 0) + 1)
-                set_children_color(layout, get_color_from_hex('FF6666'))
+        for status in Status.list(is_prayed=False):
+            if datetime.strptime(status.date, '%Y-%m-%d').date() == self.today:
+                time = Time.get(time_name=status.time_name, date=self.today)
+                print(status.time_name, time.time_name, time.from_time, time.to_time)
+                if datetime.now() < _datetime_parser(time.to_time):
+                    continue
+            
+            layout = getattr(self.entrance.missed, 'missed_{}'.format(status.time_name))
+            button = getattr(layout, '{}_button'.format(status.time_name))
+            label = getattr(layout, '{}_count'.format(status.time_name))            
+            
+            button.active = button.disabled = False
+            button.db_keys.append(status.pk)
+            label.text = str((label.text and int(label.text) or 0) + 1)
+            set_children_color(layout, get_color_from_hex('FF6666'))
+            times.pop(status.time_name, None)
 
         for time in times:
             layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
@@ -479,16 +461,16 @@ class Praying(ScreenManager):
     def check_counter(self, **kwargs):
         order = ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi']
         now = datetime.now()
-        try:
-            record = DB.store_get(str(self.today))
-        except KeyError:
+        records = Time.list(date=self.today)
+        if not records:
             Clock.schedule_once(lambda dt: self.check_counter(), .5)
             return
         upcoming = None
         current = None
         total_second = 0
         for key in order:
-            start, end, = list(map(lambda x: _datetime_parser(x), record[key]))
+            record = list(filter(lambda x: x.time_name == key, records))[0]
+            start, end, = _datetime_parser(record.from_time), _datetime_parser(record.to_time)
             if start < now < end:
                 current = end
                 break
@@ -509,10 +491,10 @@ class Praying(ScreenManager):
         Clock.schedule_once(lambda dt: self.check_counter(), .5)
 
     def load_stars(self):
-        daily = DB.store_exists('DAILY') and DB.store_get('DAILY') or 0
-        weekly = DB.store_exists('WEEKLY') and DB.store_get('WEEKLY') or 0
-        monthly = DB.store_exists('MONTHLY') and DB.store_get('MONTHLY') or 0
-        yearly = DB.store_exists('YEARLY') and DB.store_get('YEARLY') or 0
+        daily = Reward.get(name='daily').count
+        weekly = Reward.get(name='weekly').count
+        monthly = Reward.get(name='monthly').count
+        yearly = Reward.get(name='yearly').count
 
         self.data.stars.add_widget(
             RecordStar(text=str(daily), color=COLOR_CODES.get('yellow'))
@@ -535,12 +517,11 @@ class Praying(ScreenManager):
 
         existed_lines = len(self.data.record.children)
 
-        records = []
-        for key in DB.store_keys():
-            if key.startswith('status'):
-                record = {'pray_time': key.strip('status_')}
-                record.update(**DB.store_get(key))
-                records.append(record)
+        records = {}
+        for stat in Status.list():
+            records.setdefault(stat.date, {}).update({stat.time_name: stat.is_prayed, 'pray_time': stat.date})
+        
+        records = list(records.values())
 
         records = sorted(records, key=lambda x: datetime.strptime(x['pray_time'], '%Y-%m-%d'), reverse=True)
         for rec in records[existed_lines:existed_lines + 10]:
@@ -550,8 +531,9 @@ class Praying(ScreenManager):
     def switch_lang(self, lang=None):
         lang = lang or trans.lang
         trans.switch_lang(lang)
-        DB.store_put('language', lang)
-        DB.store_sync()
+        for language in Language.list():
+            selected = language.lang == lang
+            Language.update(language, selected=selected)
         self.entrance.lang_selection.set_text()
 
 
@@ -563,9 +545,9 @@ class PrayingApp(App):
 
     def build(self):
         try:
-            lang = DB.store_get('language')
+            lang = Language.get(selected=True).lang
             trans.switch_lang(lang)
-        except KeyError:
+        except AttributeError:
             pass
         fetch_cities()
         fetch_selected_city()
