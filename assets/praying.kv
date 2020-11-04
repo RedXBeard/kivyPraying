@@ -706,17 +706,42 @@
                 height: sp(60)
                 spacing: sp(20)
             
-            Label:
-                font_size: sp(10)
-                text: trans._('Eksikler')
-                padding: 20, 15
+            BoxLayout:
+                orientation: 'horizontal'
                 size_hint_y: None
-                text_size: self.size
-                line_height: 1
-                halign: 'left'
-                valign: 'center'
-                color: get_color_from_hex('#000000')
                 height: sp(15)
+                Widget:
+                    id: separator1
+                    size_hint_y: None
+                    height: sp(15)
+                    canvas:
+                        Color:
+                            rgb: 0, 0, 0
+                        Rectangle:
+                            pos: sp(5), separator1.center_y
+                            size: separator1.width, 1
+                Label:
+                    font_size: sp(10)
+                    text: trans._('Eksikler')
+                    padding: 0, 0
+                    size_hint: None, None
+                    text_size: self.size
+                    width: sp(50)
+                    line_height: 1
+                    halign: 'center'
+                    valign: 'center'
+                    color: get_color_from_hex('#000000')
+                    height: sp(15)
+                Widget:
+                    id: separator2
+                    size_hint_y: None
+                    height: sp(15)
+                    canvas:
+                        Color:
+                            rgb: 0, 0, 0
+                        Rectangle:
+                            pos: separator2.x, separator2.center_y
+                            size: separator2.width, 1
                 
             ScrollView:
                 id: scrlv1
@@ -727,18 +752,43 @@
                     spacing: 5, 5
                     size_hint: 1, None
                     height: max(self.minimum_height, scrlv1.height)
-            
-            Label:
-                font_size: sp(10)
-                text: trans._('Tümü')
-                padding: 20, 15
+
+            BoxLayout:
+                orientation: 'horizontal'
                 size_hint_y: None
-                text_size: self.size
-                line_height: 1
-                halign: 'left'
-                valign: 'center'
-                color: get_color_from_hex('#000000')
                 height: sp(15)
+                Widget:
+                    id: separator3
+                    size_hint_y: None
+                    height: sp(15)
+                    canvas:
+                        Color:
+                            rgb: 0, 0, 0
+                        Rectangle:
+                            pos: sp(5), separator3.center_y
+                            size: separator3.width, 1
+                Label:
+                    font_size: sp(10)
+                    text: trans._('Tümü')
+                    padding: 0, 0
+                    size_hint: None, None
+                    text_size: self.size
+                    width: sp(50)
+                    line_height: 1
+                    halign: 'center'
+                    valign: 'center'
+                    color: get_color_from_hex('#000000')
+                    height: sp(15)
+                Widget:
+                    id: separator4
+                    size_hint_y: None
+                    height: sp(15)
+                    canvas:
+                        Color:
+                            rgb: 0, 0, 0
+                        Rectangle:
+                            pos: separator4.x, separator4.center_y
+                            size: separator4.width, 1
                 
             ScrollView:
                 id: scrlv2
