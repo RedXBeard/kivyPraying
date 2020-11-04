@@ -133,6 +133,7 @@ class RecordButton(ButtonBehavior, RoundedLabel):
         root.transition = SlideTransition(direction='left')
         root.current = 'data'
         root.data.record.clear_widgets()
+        root.data.missing_record.clear_widgets()
         root.data.stars.clear_widgets()
 
         root.load_stars()
@@ -398,7 +399,7 @@ class Praying(ScreenManager):
 
         for pray_time in self.times:
             time_name = pray_time.time_name
-            if Status.get(data=self.today, time_name=time_name).is_prayed:  # Kilindi
+            if Status.get(date=self.today, time_name=time_name).is_prayed:  # Kilindi
                 button = getattr(self.entrance, time_name)
                 button.active = button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('B8D5CD'))
