@@ -1,4 +1,3 @@
-from copy import copy
 from datetime import datetime, timedelta
 from urllib.error import HTTPError
 
@@ -20,13 +19,16 @@ from kivy.uix.widget import Widget
 from kivy.utils import get_color_from_hex
 
 from config import find_parent, set_children_color, seconds_converter, set_color, _datetime_parser, \
-    fetch_selected_city, fetch_cities, COLOR_CODES, _date_parser
+    fetch_selected_city, fetch_cities, COLOR_CODES
 from language import Lang
-from providers import Heroku, CollectApi
-from storage import SQliteDB
 from models import City, Time, Status, Language, Reward
+from providers import Heroku, CollectApi
 
 trans = Lang('en')
+
+
+class RoundedLabel(Label):
+    pass
 
 
 class Star(Image):
@@ -44,7 +46,7 @@ class RecordStar(GridLayout):
         color = kwargs.pop('color')
         super(RecordStar, self).__init__(cols=2, rows=1, **kwargs)
 
-        label = Label(text=text, padding=(0, 0), height=sp(20))
+        label = RoundedLabel(text=text, padding=(0, 0), height=sp(20))
         star = Star(color=color, size_hint=(None, None), width=sp(20), height=sp(20))
         self.add_widget(label)
         self.add_widget(star)
@@ -69,7 +71,7 @@ class RecordLine(GridLayout):
         self.rows = 1
         self.size_hint_y = None
         self.height = sp(50)
-        pray_time_label = Label(text=data.get('pray_time'), font_size=sp(15), padding=(20, 20))
+        pray_time_label = RoundedLabel(text=data.get('pray_time'), font_size=sp(15), padding=(20, 20))
         sabah_checkbox = RecordLineCheckbox(active=bool(data.get('sabah')))
         ogle_checkbox = RecordLineCheckbox(active=bool(data.get('ogle')))
         ikindi_checkbox = RecordLineCheckbox(active=bool(data.get('ikindi')))
@@ -86,7 +88,7 @@ class RecordLine(GridLayout):
         self.add_widget(vitr_checkbox)
 
 
-class ResetButton(ButtonBehavior, Label):
+class ResetButton(ButtonBehavior, RoundedLabel):
     def __init__(self, **kwargs):
         super(ResetButton, self).__init__(**kwargs)
         self.press_count = 0
@@ -125,7 +127,7 @@ class ResetButton(ButtonBehavior, Label):
         set_color(self, get_color_from_hex('FFFFFF'))
 
 
-class RecordButton(ButtonBehavior, Label):
+class RecordButton(ButtonBehavior, RoundedLabel):
     def on_press(self):
         root = find_parent(self, Praying)
         root.transition = SlideTransition(direction='left')
@@ -134,10 +136,11 @@ class RecordButton(ButtonBehavior, Label):
         root.data.stars.clear_widgets()
 
         root.load_stars()
+        root.load_more_missed_records()
         root.load_more_records()
 
 
-class BackButton(ButtonBehavior, Label):
+class BackButton(ButtonBehavior, RoundedLabel):
     def on_press(self):
         root = find_parent(self, Praying)
         root.transition = SlideTransition(direction='right')
@@ -186,7 +189,7 @@ class MissedCheckBox(CheckBox):
             set_children_color(self.parent, get_color_from_hex('B8D5CD'))
 
 
-class NewDateButton(ButtonBehavior, Label):
+class NewDateButton(ButtonBehavior, RoundedLabel):
     def _clear_widgets(self):
         root = find_parent(self, Praying)
         remove_set = []
@@ -315,12 +318,17 @@ class Praying(ScreenManager):
         monthly = Reward.get(name='monthly')
         yearly = Reward.get(name='yearly')
 
-        count = len(Status.list(is_prayed=True))
+        tmp = {}
+        for status in Status.list(is_prayed=True):
+            tmp.setdefault(status.date, 0)
+            tmp[status.date] += 1
 
-        calc_yearly, count = int(count / (365 * 6)), count % (365 * 6)
-        calc_monthly, count = int(count / (28 * 6)), count % (28 * 6)
-        calc_weekly, count = int(count / (7 * 6)), count % (7 * 6)
-        calc_daily, count = int(count / (1 * 6)), count % (1 * 6)
+        count = len(list(filter(lambda x: x == 6, tmp.values())))
+
+        calc_yearly, count = int(count / 365), count % 365
+        calc_monthly, count = int(count / 28), count % 28
+        calc_weekly, count = int(count / 7), count % 7
+        calc_daily = count
 
         stars = []
         if calc_yearly > yearly.count:
@@ -383,7 +391,7 @@ class Praying(ScreenManager):
         self.times = Time.list(date=self.today, city_id=city.pk)
 
     def check_praying_status(self):
-        record = Status.get(data=self.today)
+        record = Status.get(date=self.today)
         if not record:
             for time_name in ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi', 'vitr']:
                 Status.create(time_name=time_name, date=self.today)
@@ -435,12 +443,11 @@ class Praying(ScreenManager):
         days = set([d1 + timedelta(n) for n in range(1, int((d2 - d1).days))])
         for day in days.difference(set(visits)):
             for time in times:
-                Status.create(time_name=time, date=day)
+                Status.create(time_name=time, date=day.date())
 
         for status in Status.list(is_prayed=False):
             if datetime.strptime(status.date, '%Y-%m-%d').date() == self.today:
                 time = Time.get(time_name=status.time_name, date=self.today)
-                print(status.time_name, time.time_name, time.from_time, time.to_time)
                 if datetime.now() < _datetime_parser(time.to_time):
                     continue
             
@@ -508,6 +515,25 @@ class Praying(ScreenManager):
         self.data.stars.add_widget(
             RecordStar(text=str(yearly), color=COLOR_CODES.get('purple'))
         )
+
+    def load_more_missed_records(self):
+        for child in self.data.missing_record.children:
+            if child.__class__.__name__ == 'Widget':
+                self.data.missing_record.remove_widget(child)
+                break
+
+        existed_lines = len(self.data.missing_record.children)
+
+        records = {}
+        for stat in Status.list():
+            records.setdefault(stat.date, {}).update({stat.time_name: stat.is_prayed, 'pray_time': stat.date})
+
+        records = list(filter(lambda x: False in x.values(), records.values()))
+
+        records = sorted(records, key=lambda x: datetime.strptime(x['pray_time'], '%Y-%m-%d'), reverse=True)
+        for rec in records[existed_lines:existed_lines + 10]:
+            self.data.missing_record.add_widget(RecordLine(record=rec))
+        self.data.missing_record.add_widget(Widget())
 
     def load_more_records(self):
         for child in self.data.record.children:

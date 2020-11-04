@@ -3,19 +3,18 @@ from kivy.metrics import sp
 from kivy.properties import ListProperty, BooleanProperty, ObjectProperty, string_types
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.dropdown import DropDown
-from kivy.uix.label import Label
 from kivy.utils import get_color_from_hex
 
 from config import set_children_color, find_parent
-from main import trans
+from main import trans, RoundedLabel
 from models import Language, City
 
 
-class SpinnerOption(ButtonBehavior, Label):
+class SpinnerOption(ButtonBehavior, RoundedLabel):
     pass
 
 
-class CustomSpinner(ButtonBehavior, Label):
+class CustomSpinner(ButtonBehavior, RoundedLabel):
     values = ListProperty()
     text_autoupdate = BooleanProperty(False)
     option_cls = ObjectProperty(SpinnerOption)
