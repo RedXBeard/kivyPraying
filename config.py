@@ -67,12 +67,11 @@ def fetch_cities():
             cities = Heroku().fetch_cities(2)
         except HTTPError:
             cities = []
-            
+
         for city in cities:
             City.create(name=city['name'], city_key=city['key'], id=city['id'])
     cities = City.list()
     return cities
-
 
 
 def fetch_selected_city():

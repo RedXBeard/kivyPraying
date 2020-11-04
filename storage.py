@@ -14,31 +14,31 @@ class SQliteStore:
             except Exception as e:
                 print(e)
                 pass
-            
+
     def _fetch_attr_clause(self, model, **kwargs):
         where_clause = []
-        
+
         for pair in model.attributes:
             attr_type = pair.get('type')
             key = pair.get('key')
             if key not in kwargs:
                 continue
-            
+
             value = kwargs.get(key)
             if attr_type == str:
                 value = "'{}'".format(value)
             elif attr_type == bool:
                 value = bool(value)
             where_clause.append('{}={}'.format(key, value))
-        
+
         if not where_clause:
             where_clause = ['1=1']
-    
+
         return where_clause
-        
+
     def retrieve(self, model, **kwargs):
         where_clause = self._fetch_attr_clause(model, **kwargs)
-            
+
         c = self.conn.cursor()
         c.execute("select * from {} where {}".format(
             model.db_name,
@@ -53,13 +53,13 @@ class SQliteStore:
     def list(self, model, **kwargs):
         result = []
         where_clause = self._fetch_attr_clause(model, **kwargs)
-            
+
         c = self.conn.cursor()
         c.execute("select * from {} where {}".format(
             model.db_name,
             ' and '.join(where_clause)
         ))
-        
+
         data = c.fetchall()
         description = list(map(lambda x: x[0], c.description))
         for data_set in data:
@@ -102,7 +102,7 @@ class SQliteStore:
             instance.pk
         ))
         self.conn.commit()
-    
+
     def delete(self, model, **kwargs):
         where_clause = self._fetch_attr_clause(model, **kwargs)
         c = self.conn.cursor()
@@ -111,5 +111,6 @@ class SQliteStore:
             ' and '.join(where_clause)
         ))
         self.conn.commit()
+
 
 SQliteDB = SQliteStore()
