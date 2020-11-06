@@ -124,13 +124,13 @@
 
 <DateLine>
     GridLayout
-        cols: 3
+        cols: 4
         rows: 1
-        padding: 50, 30, 50, 30
+        padding: 30, 0, 10, 0
         spacing: 30, 30
 
         pos_hint: {'center_y': .2}
-
+        
         NewDateTextInput:
             id: day
             name: 'day'
@@ -150,13 +150,19 @@
         NewDateTextInput:
             id: year
             name: 'year'
-            size_hint_x: .35
+            size_hint_x: .4
             hint_text: trans._('Yıl')
+        
+        CheckBox:
+            id: prayed
+            size_hint: None, None
+            width: sp(30)
+            height: sp(30)
 
     GridLayout
         cols: 3
         rows: 1
-        padding: 30, 30, 30, 30
+        padding: 10, 30, 10, 30
         spacing: 30, 30
         pos_hint: {'center_y': .13}
         NewDateButton:
@@ -177,6 +183,7 @@
             month: month
             year: year
             day: day
+            prayed: prayed
             text: trans._('Ekle')
             name: 'new_record_add'
             halign: 'center'
@@ -664,6 +671,7 @@
         name: 'data'
         record: record
         missing_record: missing_record
+        info_button: info_button
         stars: stars
 
         GridLayout:
@@ -681,19 +689,28 @@
                     text: trans._('Geri')
                     halign: 'center'
                     size_hint_x: None
-                    width: sp(60)
+                    width: sp(90)
                     height: sp(30)
                     font_size: sp(15)
                     padding: 0, 10
 
-                Widget:
+                InfoButton:
+                    id: info_button
+                    text: '{}: {}'.format(trans._('İlk Kayıt'), self.info_text)
+                    info_text: ''
+                    size_hint_y: None
+                    height: sp(30)
+                    padding: 0, 10
+                    color: get_color_from_hex('#000000')
+                    font_size: sp(13)
+                    
 
                 NewDateButton:
                     text: trans._('Kayıt Ekle')
                     name: 'new_record'
                     halign: 'center'
                     size_hint_x: None
-                    width: sp(120)
+                    width: sp(90)
                     height: sp(30)
                     font_size: sp(15)
                     padding: 0, 10

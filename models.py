@@ -1,9 +1,21 @@
 from storage import SQliteDB
+from datetime import datetime, date
 
 
 class ModelBase:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
+            annotation = self.__annotations__.get(key)
+            if annotation == date:
+                value = datetime.strptime(value, '%Y-%m-%d').date()
+            elif annotation == datetime:
+                value = datetime.strptime(value, '%d.%m.%Y %H:%M')
+            elif annotation == bool:
+                value = bool(value)
+            elif annotation == int:
+                value = int(value)
+            elif annotation == str:
+                value = str(value)
             setattr(self, key, value)
 
     @classmethod
@@ -20,49 +32,59 @@ class ModelBase:
 
     def update(self, **kwargs):
         return SQliteDB.update(self, **kwargs)
-    
+
     @classmethod
     def delete(cls, **kwargs):
         return SQliteDB.delete(cls, **kwargs)
 
 
 class City(ModelBase):
-    db_name = 'cities'
-    attributes = ({'key': 'pk', 'type': int, 'primary': True},
-                  {'key': 'name', 'type': str},
-                  {'key': 'city_key', 'type': str},
-                  {'key': 'id', 'type': int},
-                  {'key': 'selected', 'type': bool})
+    pk: int
+    name: str
+    city_key: str
+    id: int
+    selected: bool
+
+    class Meta:
+        db_name = 'cities'
 
 
 class Time(ModelBase):
-    db_name = 'times'
-    attributes = ({'key': 'pk', 'type': int, 'primary': True},
-                  {'key': 'time_name', 'type': str},
-                  {'key': 'from_time', 'type': str},
-                  {'key': 'to_time', 'type': str},
-                  {'key': 'date', 'type': str},
-                  {'key': 'city_id', 'type': int})
+    pk: int
+    time_name: str
+    from_time: datetime
+    to_time: datetime
+    date: date
+    city_id: int
+
+    class Meta:
+        db_name = 'times'
 
 
 class Status(ModelBase):
-    db_name = 'praying_status'
-    attributes = ({'key': 'pk', 'type': int, 'primary': True},
-                  {'key': 'time_name', 'type': str},
-                  {'key': 'is_prayed', 'type': bool},
-                  {'key': 'date', 'type': str})
+    pk: int
+    time_name: str
+    is_prayed: bool
+    date: date
+
+    class Meta:
+        db_name = 'praying_status'
 
 
 class Language(ModelBase):
-    db_name = 'languages'
-    attributes = ({'key': 'pk', 'type': int, 'primary': True},
-                  {'key': 'lang', 'type': str},
-                  {'key': 'lang_text', 'type': str},
-                  {'key': 'selected', 'type': bool})
+    pk: int
+    lang: str
+    lang_text: str
+    selected: bool
+
+    class Meta:
+        db_name = 'languages'
 
 
 class Reward(ModelBase):
-    db_name = 'rewards'
-    attributes = ({'key': 'pk', 'type': int, 'primary': True},
-                  {'key': 'name', 'type': str},
-                  {'key': 'count', 'type': int})
+    pk: int
+    name: str
+    count: int
+
+    class Meta:
+        db_name = 'rewards'

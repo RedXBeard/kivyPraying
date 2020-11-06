@@ -136,7 +136,7 @@ class CitySpinner(CustomSpinner):
         from main import Praying
         super(CitySpinner, self)._on_dropdown_select(instance=instance, data=data, *largs)
         root = find_parent(self, Praying)
-        
+
         for city in City.list():
             selected = city.name == data
             City.update(city, selected=selected)
@@ -150,7 +150,7 @@ class CitySpinner(CustomSpinner):
                 root.fetch_today_praying_times,
                 root.check_praying_status,
                 root.reset_missed_prays,
-                root.check_missed_prays,
+                root.check_missed_prays(),
             ])),
             per_step=int(1000 / 6)
         )

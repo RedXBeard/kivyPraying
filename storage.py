@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime, date
 
 from migrations import STATEMENTS
 
@@ -12,20 +13,17 @@ class SQliteStore:
                 c.execute(statement)
                 self.conn.commit()
             except Exception as e:
-                print(e)
                 pass
 
     def _fetch_attr_clause(self, model, **kwargs):
         where_clause = []
 
-        for pair in model.attributes:
-            attr_type = pair.get('type')
-            key = pair.get('key')
+        for key, attr_type in model.__annotations__.items():
             if key not in kwargs:
                 continue
 
             value = kwargs.get(key)
-            if attr_type == str:
+            if attr_type in (date, datetime, str):
                 value = "'{}'".format(value)
             elif attr_type == bool:
                 value = bool(value)
@@ -41,7 +39,7 @@ class SQliteStore:
 
         c = self.conn.cursor()
         c.execute("select * from {} where {}".format(
-            model.db_name,
+            model.Meta.db_name,
             ' and '.join(where_clause)
         ))
         data_set = c.fetchone()
@@ -56,7 +54,7 @@ class SQliteStore:
 
         c = self.conn.cursor()
         c.execute("select * from {} where {}".format(
-            model.db_name,
+            model.Meta.db_name,
             ' and '.join(where_clause)
         ))
 
@@ -70,14 +68,12 @@ class SQliteStore:
     def create(self, model, **kwargs):
         values = []
         keys = []
-        for pair in model.attributes:
-            if pair.get('primary'):
+        for key, attr_type in model.__annotations__.items():
+            if key == 'pk':
                 continue
-            attr_type = pair.get('type')
-            key = pair.get('key')
             keys.append(key)
             value = kwargs.get(key)
-            if attr_type == str:
+            if attr_type in (date, datetime, str):
                 value = "'{}'".format(value)
             elif attr_type == bool:
                 value = bool(value)
@@ -86,7 +82,7 @@ class SQliteStore:
         c = self.conn.cursor()
         c.execute(
             "insert into {} ({}) values ({})".format(
-                model.db_name,
+                model.Meta.db_name,
                 ','.join(map(str, keys)),
                 ','.join(map(str, values))
             )
@@ -97,7 +93,7 @@ class SQliteStore:
         set_clause = self._fetch_attr_clause(instance.__class__, **kwargs)
         c = self.conn.cursor()
         c.execute("update {} set {} where pk={}".format(
-            instance.db_name,
+            instance.Meta.db_name,
             ', '.join(set_clause),
             instance.pk
         ))
@@ -107,7 +103,7 @@ class SQliteStore:
         where_clause = self._fetch_attr_clause(model, **kwargs)
         c = self.conn.cursor()
         c.execute("delete from {} where {}".format(
-            model.db_name,
+            model.Meta.db_name,
             ' and '.join(where_clause)
         ))
         self.conn.commit()

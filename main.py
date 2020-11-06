@@ -47,7 +47,8 @@ class RecordStar(GridLayout):
         super(RecordStar, self).__init__(cols=2, rows=1, **kwargs)
 
         label = RoundedLabel(text=text, padding=(0, 0), height=sp(20))
-        star = Star(color=color, size_hint=(None, None), width=sp(20), height=sp(20))
+        star = Star(color=color, size_hint=(None, None),
+                    width=sp(20), height=sp(20))
         self.add_widget(label)
         self.add_widget(star)
 
@@ -114,7 +115,7 @@ class ResetButton(ButtonBehavior, RoundedLabel):
                     root.fetch_today_praying_times,
                     root.check_praying_status,
                     root.reset_missed_prays,
-                    root.check_missed_prays,
+                    root.check_missed_prays(),
                 ])),
                 per_step=int(1000 / 9)
             )
@@ -135,6 +136,8 @@ class RecordButton(ButtonBehavior, RoundedLabel):
         root.data.record.clear_widgets()
         root.data.missing_record.clear_widgets()
         root.data.stars.clear_widgets()
+
+        root.data.info_button.info_text = str(sorted(Status.list(), key=lambda x: x.date)[0].date)
 
         root.load_stars()
         root.load_more_missed_records()
@@ -202,7 +205,7 @@ class NewDateButton(ButtonBehavior, RoundedLabel):
         for child in remove_set:
             root.data.remove_widget(child)
 
-    def _refresh(self):
+    def _refresh(self, is_prayed=False):
         root = find_parent(self, Praying)
         root.progressbar_path(
             path=list(reversed([
@@ -210,7 +213,7 @@ class NewDateButton(ButtonBehavior, RoundedLabel):
                 root.fetch_today_praying_times,
                 root.check_praying_status,
                 root.reset_missed_prays,
-                root.check_missed_prays,
+                root.check_missed_prays(is_prayed=is_prayed),
             ])),
             per_step=int(1000 / 9)
         )
@@ -218,12 +221,14 @@ class NewDateButton(ButtonBehavior, RoundedLabel):
 
     def _new_record(self):
         root = find_parent(self, Praying)
-        trans_image = Image(source='assets/dark_trans.png', allow_stretch=True, keep_ratio=False)
+        trans_image = Image(source='assets/dark_trans.png',
+                            allow_stretch=True, keep_ratio=False)
         root.data.add_widget(trans_image)
         root.data.add_widget(DateLine())
 
     def _add_new_record(self):
-        day, month, year = self.day.text, self.month.values.index(self.month.text) + 1, self.year.text
+        day, month, year = self.day.text, self.month.values.index(
+            self.month.text) + 1, self.year.text
 
         try:
             date = datetime(*list(map(int, (year, month, day)))).date()
@@ -232,9 +237,9 @@ class NewDateButton(ButtonBehavior, RoundedLabel):
             return
 
         for time in ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi', 'vitr']:
-            Status.create(date=date, time_name=time)
+            Status.create(date=date, time_name=time, is_prayed=self.prayed.active)
 
-        self._refresh()
+        self._refresh(is_prayed=self.prayed.active)
 
     def on_press(self):
         if self.name == 'new_record':
@@ -267,6 +272,11 @@ class DateLine(FloatLayout):
     pass
 
 
+class InfoButton(ButtonBehavior, Label):
+    def on_press(self):
+        pass
+
+
 class Praying(ScreenManager):
     day = NumericProperty()
     month = NumericProperty()
@@ -290,7 +300,7 @@ class Praying(ScreenManager):
                 self.fetch_selected_city,
                 self.fetch_today_praying_times,
                 self.check_praying_status,  # hold
-                self.check_missed_prays,
+                self.check_missed_prays(),
                 self.check_counter
             ])),
             per_step=int(1000 / 6)
@@ -308,7 +318,8 @@ class Praying(ScreenManager):
             return
         self.welcome.progressbar.value += per_step
 
-        Clock.schedule_once(lambda dt: self.progressbar_path(path, per_step), .1)
+        Clock.schedule_once(
+            lambda dt: self.progressbar_path(path, per_step), .1)
 
     def animation_complete(self, animation, widget):
         self.entrance.remove_widget(widget)
@@ -354,7 +365,8 @@ class Praying(ScreenManager):
         try:
             star_widget = star_set.pop()
             self.entrance.add_widget(star_widget)
-            anim = Animation(pos=(-1 * Window.size[0] / 2, Window.size[1] / 2), t='in_circ', d=1.5)
+            anim = Animation(
+                pos=(-1 * Window.size[0] / 2, Window.size[1] / 2), t='in_circ', d=1.5)
             anim.start(star_widget)
             anim.bind(on_complete=self.animation_complete)
         except IndexError:
@@ -387,7 +399,8 @@ class Praying(ScreenManager):
                     pass
 
             for time in record.items():
-                Time.create(city_id=city.pk, time_name=time[0], from_time=time[1][0], to_time=time[1][1],
+                Time.create(city_id=city.pk, time_name=time[0],
+                            from_time=time[1][0], to_time=time[1][1],
                             date=self.today)
 
         self.times = Time.list(date=self.today, city_id=city.pk)
@@ -402,24 +415,29 @@ class Praying(ScreenManager):
             if Status.get(date=self.today, time_name=time_name).is_prayed:  # Kilindi
                 button = getattr(self.entrance, time_name)
                 button.active = button.disabled = True
-                set_children_color(button.parent, get_color_from_hex('B8D5CD'))
-            elif datetime.now() > _datetime_parser(pray_time.to_time):  # Kacirdi
+                set_children_color(
+                    button.parent, get_color_from_hex('B8D5CD'))
+            elif datetime.now() > pray_time.to_time:  # Kacirdi
                 button = getattr(self.entrance, time_name)
                 button.disabled = True
-                set_children_color(button.parent, get_color_from_hex('FF6666'))
-            elif datetime.now() < _datetime_parser(pray_time.from_time):  # daha var
+                set_children_color(
+                    button.parent, get_color_from_hex('FF6666'))
+            elif datetime.now() < pray_time.from_time:  # daha var
                 button = getattr(self.entrance, time_name)
                 button.disabled = True
-                set_children_color(button.parent, get_color_from_hex('D2D1BE'))
+                set_children_color(
+                    button.parent, get_color_from_hex('D2D1BE'))
             else:  # Zaman var
                 button = getattr(self.entrance, time_name)
                 button.disabled = button.active = False
-                set_children_color(button.parent, get_color_from_hex('FFFFFF'))
+                set_children_color(
+                    button.parent, get_color_from_hex('FFFFFF'))
 
         Clock.schedule_once(lambda dt: self.check_praying_status(), .5)
 
     def reset_missed_prays(self):
-        times = {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None}
+        times = {'sabah': None, 'ogle': None, 'ikindi': None,
+                 'aksam': None, 'yatsi': None, 'vitr': None}
         for time in times:
             layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
             button = getattr(layout, '{}_button'.format(time))
@@ -428,38 +446,43 @@ class Praying(ScreenManager):
             label.text = '0'
             set_children_color(layout, get_color_from_hex('B8D5CD'))
 
-    def check_missed_prays(self):
-        times = {'sabah': None, 'ogle': None, 'ikindi': None, 'aksam': None, 'yatsi': None, 'vitr': None}
-        visits = list(
-            map(lambda x: datetime.strptime(x.date, '%Y-%m-%d'), set(filter(lambda x: x.date, Status.list()))))
+    def check_missed_prays(self, is_prayed=False):
+        def inner():
+            times = {'sabah': None, 'ogle': None, 'ikindi': None,
+                     'aksam': None, 'yatsi': None, 'vitr': None}
+            visits = list(
+                map(lambda x: x.date, set(filter(lambda x: x.date, Status.list()))))
 
-        visits = sorted(visits)
-        d1 = visits and visits[0] or datetime.now().date()
-        d2 = visits and visits[-1] or datetime.now().date()
-        days = set([d1 + timedelta(n) for n in range(1, int((d2 - d1).days))])
-        for day in days.difference(set(visits)):
+            visits = sorted(visits)
+            d1 = visits and visits[0] or datetime.now()
+            d2 = visits and visits[-1] or datetime.now()
+            days = set([d1 + timedelta(n)
+                        for n in range(1, int((d2 - d1).days))])
+            for day in days.difference(set(visits)):
+                for time in times:
+                    Status.create(time_name=time, date=day, is_prayed=is_prayed)
+
+            for status in Status.list(is_prayed=False):
+                if status.date == self.today:
+                    time = Time.get(time_name=status.time_name, date=self.today)
+                    if datetime.now() < time.to_time:
+                        continue
+
+                layout = getattr(self.entrance.missed,
+                                 'missed_{}'.format(status.time_name))
+                button = getattr(layout, '{}_button'.format(status.time_name))
+                label = getattr(layout, '{}_count'.format(status.time_name))
+
+                button.active = button.disabled = False
+                button.db_keys.append(status.pk)
+                label.text = str((label.text and int(label.text) or 0) + 1)
+                set_children_color(layout, get_color_from_hex('FF6666'))
+                times.pop(status.time_name, None)
+
             for time in times:
-                Status.create(time_name=time, date=day.date())
-
-        for status in Status.list(is_prayed=False):
-            if datetime.strptime(status.date, '%Y-%m-%d').date() == self.today:
-                time = Time.get(time_name=status.time_name, date=self.today)
-                if datetime.now() < _datetime_parser(time.to_time):
-                    continue
-
-            layout = getattr(self.entrance.missed, 'missed_{}'.format(status.time_name))
-            button = getattr(layout, '{}_button'.format(status.time_name))
-            label = getattr(layout, '{}_count'.format(status.time_name))
-
-            button.active = button.disabled = False
-            button.db_keys.append(status.pk)
-            label.text = str((label.text and int(label.text) or 0) + 1)
-            set_children_color(layout, get_color_from_hex('FF6666'))
-            times.pop(status.time_name, None)
-
-        for time in times:
-            layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
-            set_children_color(layout, get_color_from_hex('B8D5CD'))
+                layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
+                set_children_color(layout, get_color_from_hex('B8D5CD'))
+        return inner
 
     def check_counter(self, **kwargs):
         order = ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi']
@@ -473,12 +496,11 @@ class Praying(ScreenManager):
         total_second = 0
         for key in order:
             record = list(filter(lambda x: x.time_name == key, records))[0]
-            start, end, = _datetime_parser(record.from_time), _datetime_parser(record.to_time)
-            if start < now < end:
-                current = end
+            if record.from_time < now < record.to_time:
+                current = record.to_time
                 break
-            if start > now:
-                upcoming = start
+            if record.from_time > now:
+                upcoming = record.from_time
                 break
 
         if current is not None:
@@ -522,11 +544,14 @@ class Praying(ScreenManager):
 
         records = {}
         for stat in Status.list():
-            records.setdefault(stat.date, {}).update({stat.time_name: stat.is_prayed, 'pray_time': stat.date})
+            records.setdefault(stat.date, {}).update(
+                {stat.time_name: stat.is_prayed, 'pray_time': str(stat.date)})
 
-        records = list(filter(lambda x: False in x.values(), records.values()))
+        records = list(
+            filter(lambda x: False in x.values(), records.values()))
 
-        records = sorted(records, key=lambda x: datetime.strptime(x['pray_time'], '%Y-%m-%d'), reverse=True)
+        records = sorted(records, key=lambda x: datetime.strptime(
+            x['pray_time'], '%Y-%m-%d'), reverse=True)
         for rec in records[existed_lines:existed_lines + 10]:
             self.data.missing_record.add_widget(RecordLine(record=rec))
         self.data.missing_record.add_widget(Widget())
@@ -541,11 +566,13 @@ class Praying(ScreenManager):
 
         records = {}
         for stat in Status.list():
-            records.setdefault(stat.date, {}).update({stat.time_name: stat.is_prayed, 'pray_time': stat.date})
+            records.setdefault(stat.date, {}).update(
+                {stat.time_name: stat.is_prayed, 'pray_time': str(stat.date)})
 
         records = list(records.values())
 
-        records = sorted(records, key=lambda x: datetime.strptime(x['pray_time'], '%Y-%m-%d'), reverse=True)
+        records = sorted(records, key=lambda x: datetime.strptime(
+            x['pray_time'], '%Y-%m-%d'), reverse=True)
         for rec in records[existed_lines:existed_lines + 10]:
             self.data.record.add_widget(RecordLine(record=rec))
         self.data.record.add_widget(Widget())
