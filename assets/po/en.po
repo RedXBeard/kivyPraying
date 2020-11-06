@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-03 08:02+0300\n"
+"POT-Creation-Date: 2020-11-06 10:44+0300\n"
 "PO-Revision-Date: 2020-09-19 22:23+0300\n"
 "Last-Translator: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
 "Language-Team: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
@@ -90,7 +90,7 @@ msgid "Salı"
 msgstr "Tuesday"
 
 #: assets/praying.kv:282
-msgid "Çarsamba"
+msgid "Çarşamba"
 msgstr "Wednesday"
 
 #: assets/praying.kv:282
@@ -141,10 +141,22 @@ msgstr "Reset"
 msgid "Kayıtlar"
 msgstr "Records"
 
-#: assets/praying.kv:680
+#: assets/praying.kv:682
 msgid "Geri"
 msgstr "Back"
 
-#: assets/praying.kv:691
+#: assets/praying.kv:692
+msgid "İlk Kayıt"
+msgstr "First Record"
+
+#: assets/praying.kv:701
 msgid "Kayıt Ekle"
 msgstr "Add Record"
+
+#: assets/praying.kv:734
+msgid "Eksikler"
+msgstr "Missing"
+
+#: assets/praying.kv:781
+msgid "Tümü"
+msgstr "Complete"

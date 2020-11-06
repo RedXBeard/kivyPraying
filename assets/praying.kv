@@ -3,7 +3,7 @@
 #:import MonthSpinner spinners.MonthSpinner
 #:import trans __main__.trans
 
-<Label>
+<RoundedLabel>
     canvas.before:
         Color:
             rgba: get_color_from_hex('ffffff')
@@ -124,13 +124,13 @@
 
 <DateLine>
     GridLayout
-        cols: 3
+        cols: 4
         rows: 1
-        padding: 50, 30, 50, 30
+        padding: 30, 0, 10, 0
         spacing: 30, 30
 
         pos_hint: {'center_y': .2}
-
+        
         NewDateTextInput:
             id: day
             name: 'day'
@@ -150,13 +150,19 @@
         NewDateTextInput:
             id: year
             name: 'year'
-            size_hint_x: .35
+            size_hint_x: .4
             hint_text: trans._('Yıl')
+        
+        CheckBox:
+            id: prayed
+            size_hint: None, None
+            width: sp(30)
+            height: sp(30)
 
     GridLayout
         cols: 3
         rows: 1
-        padding: 30, 30, 30, 30
+        padding: 10, 30, 10, 30
         spacing: 30, 30
         pos_hint: {'center_y': .13}
         NewDateButton:
@@ -177,6 +183,7 @@
             month: month
             year: year
             day: day
+            prayed: prayed
             text: trans._('Ekle')
             name: 'new_record_add'
             halign: 'center'
@@ -275,11 +282,11 @@
                     text_autoupdate: True
 
 
-            Label:
+            RoundedLabel:
                 id: today
                 name: 'today'
                 halign: 'center'
-                text: '{0} {1} {2}, {3}'.format(root.day, (root.month == 1 and trans._('Ocak') or root.month == 2 and trans._('Şubat') or root.month == 3 and trans._('Mart') or root.month == 4 and trans._('Nisan') or root.month == 5 and trans._('Mayıs') or root.month == 6 and trans._('Haziran') or root.month == 7 and trans._('Temmuz') or root.month == 8 and trans._('Ağustos') or root.month == 9 and trans._('Eylül') or root.month == 10 and trans._('Ekim') or root.month == 11 and trans._('Kasım') or root.month == 12 and trans._('Aralık') or ''), root.year, (root.weekday == 0 and trans._('Pazartesi') or root.weekday == 1 and trans._('Salı') or root.weekday == 2 and trans._('Çarsamba') or root.weekday == 3 and trans._('Perşembe') or root.weekday == 4 and trans._('Cuma') or root.weekday == 5 and trans._('Cumartesi') or root.weekday == 6 and trans._('Pazar') or ''))
+                text: '{0} {1} {2}, {3}'.format(root.day, (root.month == 1 and trans._('Ocak') or root.month == 2 and trans._('Şubat') or root.month == 3 and trans._('Mart') or root.month == 4 and trans._('Nisan') or root.month == 5 and trans._('Mayıs') or root.month == 6 and trans._('Haziran') or root.month == 7 and trans._('Temmuz') or root.month == 8 and trans._('Ağustos') or root.month == 9 and trans._('Eylül') or root.month == 10 and trans._('Ekim') or root.month == 11 and trans._('Kasım') or root.month == 12 and trans._('Aralık') or ''), root.year, (root.weekday == 0 and trans._('Pazartesi') or root.weekday == 1 and trans._('Salı') or root.weekday == 2 and trans._('Çarşamba') or root.weekday == 3 and trans._('Perşembe') or root.weekday == 4 and trans._('Cuma') or root.weekday == 5 and trans._('Cumartesi') or root.weekday == 6 and trans._('Pazar') or ''))
 
             GridLayout:
                 id: times
@@ -296,7 +303,7 @@
                     spacing: sp(-20), sp(0)
                     size_hint_y: None
                     height: sp(40)
-                    Label:
+                    RoundedLabel:
                         text: trans._('Sabah')
                     PrayedCheckBox:
                         id: sabah
@@ -311,7 +318,7 @@
                     spacing: sp(-20), sp(0)
                     size_hint_y: None
                     height: sp(40)
-                    Label:
+                    RoundedLabel:
                         text: trans._('Ogle')
                     PrayedCheckBox:
                         id: ogle
@@ -326,7 +333,7 @@
                     spacing: sp(-20), sp(0)
                     size_hint_y: None
                     height: sp(40)
-                    Label:
+                    RoundedLabel:
                         text: trans._('Ikindi')
                     PrayedCheckBox:
                         id: ikindi
@@ -341,7 +348,7 @@
                     spacing: sp(-20), sp(0)
                     size_hint_y: None
                     height: sp(40)
-                    Label:
+                    RoundedLabel:
                         text: trans._('Aksam')
                     PrayedCheckBox:
                         id: aksam
@@ -356,7 +363,7 @@
                     spacing: sp(-20), sp(0)
                     size_hint_y: None
                     height: sp(40)
-                    Label:
+                    RoundedLabel:
                         text: trans._('Yatsi')
                     PrayedCheckBox:
                         id: yatsi
@@ -371,7 +378,7 @@
                     spacing: sp(-20), sp(0)
                     size_hint_y: None
                     height: sp(40)
-                    Label:
+                    RoundedLabel:
                         text: trans._('Vitr')
                     PrayedCheckBox:
                         id: vitr
@@ -412,31 +419,31 @@
                 size_hint_y: None
                 height: sp(40)
 
-                Label:
+                RoundedLabel:
                     id: hours
                     halign: 'right'
                     text: '23'
 
-                Label:
+                RoundedLabel:
                     halign: 'center'
                     text: ':'
                     size_hint_x: None
                     width: sp(10)
 
-                Label:
+                RoundedLabel:
                     id: minutes
                     halign: 'center'
                     text: '59'
                     size_hint_x: None
                     width: sp(50)
 
-                Label:
+                RoundedLabel:
                     halign: 'center'
                     text: ':'
                     size_hint_x: None
                     width: sp(10)
 
-                Label:
+                RoundedLabel:
                     id: seconds
                     halign: 'left'
                     text: '59'
@@ -469,13 +476,13 @@
                     rows: 3
                     size_hint_y: None
                     height: sp(30)
-                    Label:
+                    RoundedLabel:
                         text: trans._('Sabah')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
                         font_size: sp(15)
-                    Label:
+                    RoundedLabel:
                         id: sabah_count
                         halign: 'center'
                         padding: 20, 10
@@ -498,13 +505,13 @@
                     rows: 3
                     size_hint_y: None
                     height: sp(30)
-                    Label:
+                    RoundedLabel:
                         text: trans._(u'Ogle')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
                         font_size: sp(15)
-                    Label:
+                    RoundedLabel:
                         id: ogle_count
                         halign: 'center'
                         padding: 20, 10
@@ -527,13 +534,13 @@
                     rows: 3
                     size_hint_y: None
                     height: sp(30)
-                    Label:
+                    RoundedLabel:
                         text: trans._('Ikindi')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
                         font_size: sp(15)
-                    Label:
+                    RoundedLabel:
                         id: ikindi_count
                         halign: 'center'
                         padding: 20, 10
@@ -556,13 +563,13 @@
                     rows: 3
                     size_hint_y: None
                     height: sp(30)
-                    Label:
+                    RoundedLabel:
                         text: trans._('Aksam')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
                         font_size: sp(15)
-                    Label:
+                    RoundedLabel:
                         id: aksam_count
                         halign: 'center'
                         padding: 20, 10
@@ -585,13 +592,13 @@
                     rows: 3
                     size_hint_y: None
                     height: sp(30)
-                    Label:
+                    RoundedLabel:
                         text: trans._('Yatsi')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
                         font_size: sp(15)
-                    Label:
+                    RoundedLabel:
                         id: yatsi_count
                         halign: 'center'
                         padding: 20, 10
@@ -614,13 +621,13 @@
                     rows: 3
                     size_hint_y: None
                     height: sp(30)
-                    Label:
+                    RoundedLabel:
                         text: trans._('Vitr')
                         halign: 'center'
                         padding: 20, 10
                         height: sp(30)
                         font_size: sp(15)
-                    Label:
+                    RoundedLabel:
                         id: vitr_count
                         halign: 'center'
                         padding: 20, 10
@@ -663,11 +670,13 @@
         id: data
         name: 'data'
         record: record
+        missing_record: missing_record
+        info_button: info_button
         stars: stars
 
         GridLayout:
             cols: 1
-            rows: 3
+            rows: 6
             padding: 10, 10, 10, 10
 
             GridLayout:
@@ -680,19 +689,28 @@
                     text: trans._('Geri')
                     halign: 'center'
                     size_hint_x: None
-                    width: sp(60)
+                    width: sp(90)
                     height: sp(30)
                     font_size: sp(15)
                     padding: 0, 10
 
-                Widget:
+                InfoButton:
+                    id: info_button
+                    text: '{}: {}'.format(trans._('İlk Kayıt'), self.info_text)
+                    info_text: ''
+                    size_hint_y: None
+                    height: sp(30)
+                    padding: 0, 10
+                    color: get_color_from_hex('#000000')
+                    font_size: sp(13)
+                    
 
                 NewDateButton:
                     text: trans._('Kayıt Ekle')
                     name: 'new_record'
                     halign: 'center'
                     size_hint_x: None
-                    width: sp(120)
+                    width: sp(90)
                     height: sp(30)
                     font_size: sp(15)
                     padding: 0, 10
@@ -704,13 +722,97 @@
                 size_hint: 1, None
                 height: sp(60)
                 spacing: sp(20)
+            
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: sp(15)
+                Widget:
+                    id: separator1
+                    size_hint_y: None
+                    height: sp(15)
+                    canvas:
+                        Color:
+                            rgb: 0, 0, 0
+                        Rectangle:
+                            pos: sp(5), separator1.center_y
+                            size: separator1.width, 1
+                Label:
+                    font_size: sp(10)
+                    text: trans._('Eksikler')
+                    padding: 0, 0
+                    size_hint: None, None
+                    text_size: self.size
+                    width: sp(50)
+                    line_height: 1
+                    halign: 'center'
+                    valign: 'center'
+                    color: get_color_from_hex('#000000')
+                    height: sp(15)
+                Widget:
+                    id: separator2
+                    size_hint_y: None
+                    height: sp(15)
+                    canvas:
+                        Color:
+                            rgb: 0, 0, 0
+                        Rectangle:
+                            pos: separator2.x, separator2.center_y
+                            size: separator2.width, 1
                 
             ScrollView:
-                id: scrlv
+                id: scrlv1
+                on_scroll_stop: root.load_more_missed_records()
+                BoxLayout:
+                    id: missing_record
+                    orientation: 'vertical'
+                    spacing: 5, 5
+                    size_hint: 1, None
+                    height: max(self.minimum_height, scrlv1.height)
+
+            BoxLayout:
+                orientation: 'horizontal'
+                size_hint_y: None
+                height: sp(15)
+                Widget:
+                    id: separator3
+                    size_hint_y: None
+                    height: sp(15)
+                    canvas:
+                        Color:
+                            rgb: 0, 0, 0
+                        Rectangle:
+                            pos: sp(5), separator3.center_y
+                            size: separator3.width, 1
+                Label:
+                    font_size: sp(10)
+                    text: trans._('Tümü')
+                    padding: 0, 0
+                    size_hint: None, None
+                    text_size: self.size
+                    width: sp(50)
+                    line_height: 1
+                    halign: 'center'
+                    valign: 'center'
+                    color: get_color_from_hex('#000000')
+                    height: sp(15)
+                Widget:
+                    id: separator4
+                    size_hint_y: None
+                    height: sp(15)
+                    canvas:
+                        Color:
+                            rgb: 0, 0, 0
+                        Rectangle:
+                            pos: separator4.x, separator4.center_y
+                            size: separator4.width, 1
+                
+            ScrollView:
+                id: scrlv2
                 on_scroll_stop: root.load_more_records()
                 BoxLayout:
                     id: record
                     orientation: 'vertical'
                     spacing: 5, 5
                     size_hint: 1, None
-                    height: max(self.minimum_height, scrlv.height)
+                    height: max(self.minimum_height, scrlv2.height)

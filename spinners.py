@@ -3,18 +3,18 @@ from kivy.metrics import sp
 from kivy.properties import ListProperty, BooleanProperty, ObjectProperty, string_types
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.dropdown import DropDown
-from kivy.uix.label import Label
 from kivy.utils import get_color_from_hex
 
-from config import set_children_color, find_parent, DB
-from main import trans
+from config import set_children_color, find_parent
+from main import trans, RoundedLabel
+from models import Language, City
 
 
-class SpinnerOption(ButtonBehavior, Label):
+class SpinnerOption(ButtonBehavior, RoundedLabel):
     pass
 
 
-class CustomSpinner(ButtonBehavior, Label):
+class CustomSpinner(ButtonBehavior, RoundedLabel):
     values = ListProperty()
     text_autoupdate = BooleanProperty(False)
     option_cls = ObjectProperty(SpinnerOption)
@@ -112,8 +112,8 @@ class LangSpinner(CustomSpinner):
 
     def set_text(self):
         try:
-            lang = DB.store_get('language')
-        except KeyError:
+            lang = Language.get(selected=True).lang
+        except AttributeError:
             lang = trans.lang
         self.text = dict(list(map(lambda x: list(reversed(list(x))), self.values_dict.items())))[lang]
 
@@ -127,22 +127,19 @@ class LangSpinner(CustomSpinner):
 class CitySpinner(CustomSpinner):
     def __init__(self, **kwargs):
         super(CitySpinner, self).__init__(**kwargs)
-        self.values_list = DB.store_get('CITIES')
-        self.values = sorted(list(map(lambda x: x['name'], self.values_list)))
+        self.values = sorted(list(map(lambda x: x.name, City.list())))
 
     def set_text(self):
-        self.text = DB.store_get('SELECTED_CITIES')['name']
+        self.text = City.get(selected=True).name
 
     def _on_dropdown_select(self, instance, data, *largs):
         from main import Praying
         super(CitySpinner, self)._on_dropdown_select(instance=instance, data=data, *largs)
-        city = list(filter(lambda x: x['name'] == data, DB.store_get('CITIES')))[0]
-
         root = find_parent(self, Praying)
 
-        DB.store_put('SELECTED_CITIES', city)
-        DB.store_delete(str(root.today))
-        DB.store_sync()
+        for city in City.list():
+            selected = city.name == data
+            City.update(city, selected=selected)
 
         root.welcome.progressbar.value = 0
 
@@ -153,7 +150,7 @@ class CitySpinner(CustomSpinner):
                 root.fetch_today_praying_times,
                 root.check_praying_status,
                 root.reset_missed_prays,
-                root.check_missed_prays,
+                root.check_missed_prays(),
             ])),
             per_step=int(1000 / 6)
         )
