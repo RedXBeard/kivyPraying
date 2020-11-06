@@ -1,12 +1,15 @@
+import os
 import sqlite3
+
 from datetime import datetime, date
+from kivy import kivy_home_dir
 
 from migrations import STATEMENTS
 
 
 class SQliteStore:
     def __init__(self):
-        self.conn = sqlite3.connect('db.sqlite3')
+        self.conn = sqlite3.connect(os.path.join(kivy_home_dir, 'kivypraying.sqlite3'))
         for statement in STATEMENTS:
             try:
                 c = self.conn.cursor()
