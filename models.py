@@ -1,4 +1,4 @@
-from storage import SQliteDB
+from storage import SQLiteDB
 from datetime import datetime, date
 
 
@@ -20,22 +20,22 @@ class ModelBase:
 
     @classmethod
     def list(cls, **kwargs):
-        return SQliteDB.list(cls, **kwargs)
+        return SQLiteDB.list(cls, **kwargs)
 
     @classmethod
     def get(cls, **kwargs):
-        return SQliteDB.retrieve(cls, **kwargs)
+        return SQLiteDB.retrieve(cls, **kwargs)
 
     @classmethod
     def create(cls, **kwargs):
-        return SQliteDB.create(cls, **kwargs)
+        return SQLiteDB.create(cls, **kwargs)
 
     def update(self, **kwargs):
-        return SQliteDB.update(self, **kwargs)
+        return SQLiteDB.update(self, **kwargs)
 
     @classmethod
     def delete(cls, **kwargs):
-        return SQliteDB.delete(cls, **kwargs)
+        return SQLiteDB.delete(cls, **kwargs)
 
 
 class City(ModelBase):

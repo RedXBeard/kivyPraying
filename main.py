@@ -6,7 +6,7 @@ from kivy.app import App
 from kivy.core.window import Window
 from kivy.lang import Builder
 from kivy.metrics import sp
-from kivy.properties import StringProperty, ListProperty, Clock, NumericProperty
+from kivy.properties import StringProperty, Clock, NumericProperty, ListProperty, DictProperty
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.floatlayout import FloatLayout
@@ -18,8 +18,8 @@ from kivy.uix.textinput import TextInput
 from kivy.uix.widget import Widget
 from kivy.utils import get_color_from_hex
 
-from config import find_parent, set_children_color, seconds_converter, set_color, _datetime_parser, \
-    fetch_selected_city, fetch_cities, COLOR_CODES
+from config import find_parent, set_children_color, seconds_converter, set_color, fetch_selected_city, fetch_cities, \
+    COLOR_CODES
 from language import Lang
 from models import City, Time, Status, Language, Reward
 from providers import Heroku, CollectApi
@@ -137,7 +137,12 @@ class RecordButton(ButtonBehavior, RoundedLabel):
         root.data.missing_record.clear_widgets()
         root.data.stars.clear_widgets()
 
-        root.data.info_button.info_text = str(sorted(Status.list(), key=lambda x: x.date)[0].date)
+        statuses = sorted(Status.list(), key=lambda x: x.date)
+        root.data.info_button.info_text = str(statuses[0].date)
+
+        for status in statuses:
+            root.records.setdefault(status.date, {}).update(
+                {status.time_name: status.is_prayed, 'pray_time': str(status.date)})
 
         root.load_stars()
         root.load_more_missed_records()
@@ -175,9 +180,19 @@ class MissedCheckBox(CheckBox):
     def on_press(self):
         root = find_parent(self, Praying)
         time = self.name
-        key = self.db_keys.pop()
+        status = None
 
-        status = Status.get(pk=key)
+        for status in sorted(Status.list(time_name=time, is_prayed=False), key=lambda x: x.date, reverse=True):
+            try:
+                index = self.db_keys.index(status.pk)
+                self.db_keys.pop(index)
+                break
+            except ValueError:
+                pass
+
+        if not status:
+            return
+
         Status.update(status, is_prayed=True)
 
         layout = getattr(root.entrance.missed, 'missed_{}'.format(time))
@@ -282,6 +297,7 @@ class Praying(ScreenManager):
     month = NumericProperty()
     year = NumericProperty()
     weekday = NumericProperty()
+    records = DictProperty()
 
     def __init__(self, **kwargs):
         super(Praying, self).__init__(**kwargs)
@@ -330,8 +346,14 @@ class Praying(ScreenManager):
         monthly = Reward.get(name='monthly')
         yearly = Reward.get(name='yearly')
 
+        shown = daily.count + weekly.count * 7 + monthly.count * 30 + yearly.count * 365
+        statuses = Status.list(is_prayed=True)
+        if shown == len(statuses):
+            Clock.schedule_once(lambda dt: self.reward_success(), .5)
+            return
+
         tmp = {}
-        for status in Status.list(is_prayed=True):
+        for status in statuses:
             tmp.setdefault(status.date, 0)
             tmp[status.date] += 1
 
@@ -482,6 +504,7 @@ class Praying(ScreenManager):
             for time in times:
                 layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
                 set_children_color(layout, get_color_from_hex('B8D5CD'))
+
         return inner
 
     def check_counter(self, **kwargs):
@@ -542,13 +565,7 @@ class Praying(ScreenManager):
 
         existed_lines = len(self.data.missing_record.children)
 
-        records = {}
-        for stat in Status.list():
-            records.setdefault(stat.date, {}).update(
-                {stat.time_name: stat.is_prayed, 'pray_time': str(stat.date)})
-
-        records = list(
-            filter(lambda x: False in x.values(), records.values()))
+        records = list(filter(lambda x: False in x.values(), self.records.values()))
 
         records = sorted(records, key=lambda x: datetime.strptime(
             x['pray_time'], '%Y-%m-%d'), reverse=True)
@@ -564,12 +581,7 @@ class Praying(ScreenManager):
 
         existed_lines = len(self.data.record.children)
 
-        records = {}
-        for stat in Status.list():
-            records.setdefault(stat.date, {}).update(
-                {stat.time_name: stat.is_prayed, 'pray_time': str(stat.date)})
-
-        records = list(records.values())
+        records = list(self.records.values())
 
         records = sorted(records, key=lambda x: datetime.strptime(
             x['pray_time'], '%Y-%m-%d'), reverse=True)

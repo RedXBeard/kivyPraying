@@ -50,4 +50,8 @@ STATEMENTS = (
     "insert into rewards (name, count) select 'yearly', 0 where not exists(select 1 from rewards where name='yearly')",
     "insert into languages (lang, lang_text) select 'tr', 'Türkçe' where not exists(select 1 from languages where lang='tr')",
     "insert into languages (lang, lang_text) select 'en', 'English' where not exists(select 1 from languages where lang='en')",
+    "CREATE INDEX idx_praying_status_date_prayed ON praying_status (is_prayed, date)",
+    "CREATE INDEX idx_praying_status_isprayed ON praying_status (is_prayed)",
+    "CREATE INDEX idx_praying_status_date ON praying_status (date)",
+    "CREATE INDEX idx_times_date ON times (date)",
 )

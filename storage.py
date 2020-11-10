@@ -7,7 +7,7 @@ from kivy import kivy_home_dir
 from migrations import STATEMENTS
 
 
-class SQliteStore:
+class SQLiteStore:
     def __init__(self):
         self.conn = sqlite3.connect(os.path.join(kivy_home_dir, 'kivypraying.sqlite3'))
         for statement in STATEMENTS:
@@ -18,7 +18,8 @@ class SQliteStore:
             except Exception as e:
                 pass
 
-    def _fetch_attr_clause(self, model, **kwargs):
+    @staticmethod
+    def _fetch_attr_clause(model, **kwargs):
         where_clause = []
 
         for key, attr_type in model.__annotations__.items():
@@ -112,4 +113,4 @@ class SQliteStore:
         self.conn.commit()
 
 
-SQliteDB = SQliteStore()
+SQLiteDB = SQLiteStore()
