@@ -113,8 +113,8 @@ class ResetButton(ButtonBehavior, RoundedLabel):
                 path=list(reversed([
                     root.start_progress,
                     root.fetch_today_praying_times,
-                    root.check_praying_status,
                     root.reset_missed_prays,
+                    root.check_praying_status,
                     root.check_missed_prays(),
                 ])),
                 per_step=int(1000 / 9)
@@ -437,23 +437,32 @@ class Praying(ScreenManager):
             if Status.get(date=self.today, time_name=time_name).is_prayed:  # Kilindi
                 button = getattr(self.entrance, time_name)
                 button.active = button.disabled = True
-                set_children_color(
-                    button.parent, get_color_from_hex('B8D5CD'))
+                set_children_color(button.parent, get_color_from_hex('B8D5CD'))
             elif datetime.now() > pray_time.to_time:  # Kacirdi
                 button = getattr(self.entrance, time_name)
                 button.disabled = True
-                set_children_color(
-                    button.parent, get_color_from_hex('FF6666'))
+                set_children_color(button.parent, get_color_from_hex('FF6666'))
+
+                layout = getattr(self.entrance.missed, 'missed_{}'.format(time_name))
+                button = getattr(layout, '{}_button'.format(time_name))
+                label = getattr(layout, '{}_count'.format(time_name))
+
+                status = Status.get(time_name=time_name, date=self.today)
+                if status.pk not in button.db_keys:
+                    button.db_keys.append(status.pk)
+
+                    button.active = button.disabled = False
+                    label.text = str((label.text and int(label.text) or 0) + 1)
+                    set_children_color(layout, get_color_from_hex('FF6666'))
+
             elif datetime.now() < pray_time.from_time:  # daha var
                 button = getattr(self.entrance, time_name)
                 button.disabled = True
-                set_children_color(
-                    button.parent, get_color_from_hex('D2D1BE'))
+                set_children_color(button.parent, get_color_from_hex('D2D1BE'))
             else:  # Zaman var
                 button = getattr(self.entrance, time_name)
                 button.disabled = button.active = False
-                set_children_color(
-                    button.parent, get_color_from_hex('FFFFFF'))
+                set_children_color(button.parent, get_color_from_hex('FFFFFF'))
 
         Clock.schedule_once(lambda dt: self.check_praying_status(), .5)
 
@@ -486,12 +495,9 @@ class Praying(ScreenManager):
 
             for status in Status.list(is_prayed=False):
                 if status.date == self.today:
-                    time = Time.get(time_name=status.time_name, date=self.today)
-                    if datetime.now() < time.to_time:
-                        continue
+                    continue
 
-                layout = getattr(self.entrance.missed,
-                                 'missed_{}'.format(status.time_name))
+                layout = getattr(self.entrance.missed, 'missed_{}'.format(status.time_name))
                 button = getattr(layout, '{}_button'.format(status.time_name))
                 label = getattr(layout, '{}_count'.format(status.time_name))
 
@@ -503,6 +509,9 @@ class Praying(ScreenManager):
 
             for time in times:
                 layout = getattr(self.entrance.missed, 'missed_{}'.format(time))
+                button = getattr(layout, '{}_button'.format(time))
+                if button.db_keys:
+                    continue
                 set_children_color(layout, get_color_from_hex('B8D5CD'))
 
         return inner
