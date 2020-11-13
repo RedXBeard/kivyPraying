@@ -226,8 +226,8 @@ class NewDateButton(ButtonBehavior, RoundedLabel):
             path=list(reversed([
                 root.start_progress,
                 root.fetch_today_praying_times,
-                root.check_praying_status,
                 root.reset_missed_prays,
+                root.check_praying_status,
                 root.check_missed_prays(is_prayed=is_prayed),
             ])),
             per_step=int(1000 / 9)
@@ -474,6 +474,7 @@ class Praying(ScreenManager):
             button = getattr(layout, '{}_button'.format(time))
             label = getattr(layout, '{}_count'.format(time))
             button.active = button.disabled = True
+            button.db_keys = []
             label.text = '0'
             set_children_color(layout, get_color_from_hex('B8D5CD'))
 
