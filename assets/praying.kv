@@ -60,7 +60,7 @@
             pos: self.pos[0]+self.width-sp(25), self.pos[1]+self.height-sp(25)
     size_hint_y: None
     height: sp(40)
-    padding: 20, 15
+    padding: 20, 20
             
 <CheckBox>
     canvas.before:
@@ -640,27 +640,22 @@
                         height: sp(30)
 
             GridLayout:
-                cols: 3
+                cols: 2
                 rows: 1
                 size_hint_y: None
                 height: sp(60)
+                padding: 0, 60, 0, 0
 
                 ResetButton:
                     text: trans._('Sifirla')
                     halign: 'center'
-                    size_hint_x: None
-                    width: sp(150)
                     height: sp(30)
                     font_size: sp(15)
                     padding: 0, 10
 
-                Widget:
-
                 RecordButton:
                     text: trans._('Kayıtlar')
                     halign: 'center'
-                    size_hint_x: None
-                    width: sp(150)
                     height: sp(30)
                     font_size: sp(15)
                     padding: 0, 10
@@ -702,7 +697,7 @@
                     height: sp(30)
                     padding: 0, 10
                     color: get_color_from_hex('#000000')
-                    font_size: sp(13)
+                    font_size: sp(10)
                     
 
                 NewDateButton:

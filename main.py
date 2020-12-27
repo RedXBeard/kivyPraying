@@ -46,7 +46,7 @@ class RecordStar(GridLayout):
         color = kwargs.pop('color')
         super(RecordStar, self).__init__(cols=2, rows=1, **kwargs)
 
-        label = RoundedLabel(text=text, padding=(0, 0), height=sp(20))
+        label = Label(text=text, padding=(0, 0), height=sp(20), font_size=sp(15), color=get_color_from_hex('#000000'))
         star = Star(color=color, size_hint=(None, None),
                     width=sp(20), height=sp(20))
         self.add_widget(label)
