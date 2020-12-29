@@ -3,10 +3,11 @@ from urllib.error import HTTPError
 
 from kivy.animation import Animation
 from kivy.app import App
+from kivy.clock import Clock
 from kivy.core.window import Window
 from kivy.lang import Builder
 from kivy.metrics import sp
-from kivy.properties import StringProperty, Clock, NumericProperty, ListProperty, DictProperty
+from kivy.properties import StringProperty, NumericProperty, ListProperty, DictProperty
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.checkbox import CheckBox
 from kivy.uix.floatlayout import FloatLayout
@@ -154,6 +155,29 @@ class BackButton(ButtonBehavior, RoundedLabel):
         root = find_parent(self, Praying)
         root.transition = SlideTransition(direction='right')
         root.current = 'entrance'
+
+
+class AddOneDateButton(ButtonBehavior, RoundedLabel):
+    def on_press(self):
+        root = find_parent(self, Praying)
+        statuses = sorted(Status.list(), key=lambda x: x.date)
+        day = (statuses[0].date - timedelta(days=1))
+        for time_name in ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi', 'vitr']:
+            Status.create(time_name=time_name, date=day)
+            root.records.setdefault(day, {}).update({time_name: False, 'pray_time': str(day)})
+
+        root.data.record.clear_widgets()
+        root.data.missing_record.clear_widgets()
+        root.data.stars.clear_widgets()
+
+        root.load_stars()
+        root.load_more_missed_records()
+        root.load_more_records()
+
+        root.data.info_button.info_text = str(day)
+
+        root.reset_missed_prays()
+        root.check_missed_prays()()
 
 
 class PrayedCheckBox(CheckBox):
@@ -434,11 +458,11 @@ class Praying(ScreenManager):
 
         for pray_time in self.times:
             time_name = pray_time.time_name
-            if Status.get(date=self.today, time_name=time_name).is_prayed:  # Kilindi
+            if Status.get(date=self.today, time_name=time_name).is_prayed:  # Prayed
                 button = getattr(self.entrance, time_name)
                 button.active = button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('B8D5CD'))
-            elif datetime.now() > pray_time.to_time:  # Kacirdi
+            elif datetime.now() > pray_time.to_time:  # Missed
                 button = getattr(self.entrance, time_name)
                 button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('FF6666'))
@@ -455,11 +479,11 @@ class Praying(ScreenManager):
                     label.text = str((label.text and int(label.text) or 0) + 1)
                     set_children_color(layout, get_color_from_hex('FF6666'))
 
-            elif datetime.now() < pray_time.from_time:  # daha var
+            elif datetime.now() < pray_time.from_time:  # on time
                 button = getattr(self.entrance, time_name)
                 button.disabled = True
                 set_children_color(button.parent, get_color_from_hex('D2D1BE'))
-            else:  # Zaman var
+            else:  # wait for time
                 button = getattr(self.entrance, time_name)
                 button.disabled = button.active = False
                 set_children_color(button.parent, get_color_from_hex('FFFFFF'))
@@ -475,7 +499,7 @@ class Praying(ScreenManager):
             label = getattr(layout, '{}_count'.format(time))
             button.active = button.disabled = True
             button.db_keys = []
-            label.text = '0'
+            label.text = ''
             set_children_color(layout, get_color_from_hex('B8D5CD'))
 
     def check_missed_prays(self, is_prayed=False):
@@ -488,8 +512,7 @@ class Praying(ScreenManager):
             visits = sorted(visits)
             d1 = visits and visits[0] or datetime.now()
             d2 = visits and visits[-1] or datetime.now()
-            days = set([d1 + timedelta(n)
-                        for n in range(1, int((d2 - d1).days))])
+            days = set([d1 + timedelta(n) for n in range(1, int((d2 - d1).days))])
             for day in days.difference(set(visits)):
                 for time in times:
                     Status.create(time_name=time, date=day, is_prayed=is_prayed)
@@ -504,7 +527,7 @@ class Praying(ScreenManager):
 
                 button.active = button.disabled = False
                 button.db_keys.append(status.pk)
-                label.text = str((label.text and int(label.text) or 0) + 1)
+                label.text = str((label.text.isdigit() and int(label.text) or 0) + 1)
                 set_children_color(layout, get_color_from_hex('FF6666'))
                 times.pop(status.time_name, None)
 
