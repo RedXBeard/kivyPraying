@@ -1,7 +1,8 @@
 import os
 import sqlite3
-
+from copy import copy
 from datetime import datetime, date
+
 from kivy import kivy_home_dir
 
 from migrations import STATEMENTS
@@ -90,6 +91,37 @@ class SQLiteStore:
                 ','.join(map(str, keys)),
                 ','.join(map(str, values))
             )
+        )
+        self.conn.commit()
+
+    def create_bulk(self, model, **kwargs):
+        values = []
+        keys = []
+        kwargs_set = copy(kwargs.get('chunks'))
+        for key, attr_type in model.__annotations__.items():
+            if key == 'pk':
+                continue
+            keys.append(key)
+            for kwarg in kwargs_set:
+                value = kwarg.get(key)
+                if attr_type == bool:
+                    value = bool(value) and 1 or 0
+                kwarg[key] = value
+
+        for kwarg in kwargs_set:
+            tmp = []
+            for key in keys:
+                tmp.append(kwarg.get(key))
+            values.append(tmp)
+        c = self.conn.cursor()
+
+        c.executemany(
+            "insert into {} ({}) values ({})".format(
+                model.Meta.db_name,
+                ','.join(map(str, keys)),
+                ('?,' * len(keys)).strip(',')
+            ),
+            values
         )
         self.conn.commit()
 

@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2020-11-06 10:44+0300\n"
+"POT-Creation-Date: 2021-03-22 16:49+0300\n"
 "PO-Revision-Date: 2020-09-19 22:23+0300\n"
 "Last-Translator: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
 "Language-Team: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
@@ -21,51 +21,51 @@ msgstr ""
 msgid "Gün"
 msgstr "Day"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Ocak"
 msgstr "January"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Şubat"
 msgstr "Fabruary"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Mart"
 msgstr "March"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Nisan"
 msgstr "April"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Mayıs"
 msgstr "May"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Haziran"
 msgstr "June"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Temmuz"
 msgstr "July"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Ağustos"
 msgstr "August"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Eylül"
 msgstr "September"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Ekim"
 msgstr "October"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Kasım"
 msgstr "November"
 
-#: assets/praying.kv:142 assets/praying.kv:282
+#: assets/praying.kv:142 assets/praying.kv:254
 msgid "Aralık"
 msgstr "December"
 
@@ -73,90 +73,106 @@ msgstr "December"
 msgid "Yıl"
 msgstr "Year"
 
-#: assets/praying.kv:163
+#: assets/praying.kv:169
 msgid "İptal"
 msgstr "Cancel"
 
-#: assets/praying.kv:180
+#: assets/praying.kv:187
 msgid "Ekle"
 msgstr "Add"
 
-#: assets/praying.kv:282
+#: assets/praying.kv:254
 msgid "Pazartesi"
 msgstr "Monday"
 
-#: assets/praying.kv:282
+#: assets/praying.kv:254
 msgid "Salı"
 msgstr "Tuesday"
 
-#: assets/praying.kv:282
+#: assets/praying.kv:254
 msgid "Çarşamba"
 msgstr "Wednesday"
 
-#: assets/praying.kv:282
+#: assets/praying.kv:254
 msgid "Perşembe"
 msgstr "Thursday"
 
-#: assets/praying.kv:282
+#: assets/praying.kv:254
 msgid "Cuma"
 msgstr "Friday"
 
-#: assets/praying.kv:282
+#: assets/praying.kv:254
 msgid "Cumartesi"
 msgstr "Saturday"
 
-#: assets/praying.kv:282
+#: assets/praying.kv:254
 msgid "Pazar"
 msgstr "Sunday"
 
-#: assets/praying.kv:300 assets/praying.kv:473
+#: assets/praying.kv:272 assets/praying.kv:445 assets/praying.kv:909
 msgid "Sabah"
 msgstr "Fajr"
 
-#: assets/praying.kv:315 assets/praying.kv:502
+#: assets/praying.kv:287 assets/praying.kv:474 assets/praying.kv:920
 msgid "Ogle"
 msgstr "Zuhr"
 
-#: assets/praying.kv:330 assets/praying.kv:531
+#: assets/praying.kv:302 assets/praying.kv:503 assets/praying.kv:931
 msgid "Ikindi"
 msgstr "Asr"
 
-#: assets/praying.kv:345 assets/praying.kv:560
+#: assets/praying.kv:317 assets/praying.kv:532 assets/praying.kv:942
 msgid "Aksam"
 msgstr "Maghrib"
 
-#: assets/praying.kv:360 assets/praying.kv:589
+#: assets/praying.kv:332 assets/praying.kv:561 assets/praying.kv:953
 msgid "Yatsi"
 msgstr "Isha"
 
-#: assets/praying.kv:375 assets/praying.kv:618
+#: assets/praying.kv:347 assets/praying.kv:590 assets/praying.kv:964
 msgid "Vitr"
 msgstr "Vitor"
 
-#: assets/praying.kv:642
-msgid "Sifirla"
-msgstr "Reset"
+#: assets/praying.kv:615
+msgid "Ayarlar"
+msgstr "Settings"
 
-#: assets/praying.kv:653
+#: assets/praying.kv:622
+msgid "Vakitler"
+msgstr "Praying Times"
+
+#: assets/praying.kv:629
 msgid "Kayıtlar"
 msgstr "Records"
 
-#: assets/praying.kv:682
+#: assets/praying.kv:656 assets/praying.kv:806 assets/praying.kv:894
 msgid "Geri"
 msgstr "Back"
 
-#: assets/praying.kv:692
+#: assets/praying.kv:666
 msgid "İlk Kayıt"
 msgstr "First Record"
 
-#: assets/praying.kv:701
+#: assets/praying.kv:676
 msgid "Kayıt Ekle"
 msgstr "Add Record"
 
-#: assets/praying.kv:734
+#: assets/praying.kv:710
 msgid "Eksikler"
 msgstr "Missing"
 
-#: assets/praying.kv:781
+#: assets/praying.kv:763
 msgid "Tümü"
 msgstr "Complete"
+
+#: assets/praying.kv:821
+msgid "Şehir"
+msgstr "City"
+
+#: assets/praying.kv:848
+msgid "Dil"
+msgstr "Language"
+
+#: assets/praying.kv:871
+msgid "Sifirla"
+msgstr "Reset"

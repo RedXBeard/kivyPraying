@@ -1,5 +1,6 @@
-from storage import SQLiteDB
 from datetime import datetime, date
+
+from storage import SQLiteDB
 
 
 class ModelBase:
@@ -29,6 +30,10 @@ class ModelBase:
     @classmethod
     def create(cls, **kwargs):
         return SQLiteDB.create(cls, **kwargs)
+
+    @classmethod
+    def create_bulk(cls, **kwargs):
+        return SQLiteDB.create_bulk(cls, **kwargs)
 
     def update(self, **kwargs):
         return SQLiteDB.update(self, **kwargs)

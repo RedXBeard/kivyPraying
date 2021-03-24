@@ -197,6 +197,8 @@
 <Praying>
     welcome: welcome
     entrance: entrance
+    settings: settings
+    praying_times: praying_times
     data: data
 
     Screen:
@@ -230,8 +232,6 @@
         missed: missed
         today: today
         info: info
-        city_selection: city_selection
-        lang_selection: lang_selection
 
         sabah: sabah
         ogle: ogle
@@ -242,45 +242,10 @@
 
         GridLayout:
             cols: 1
-            rows: 6
+            rows: 5
 
             padding: 15, 15, 15, 15
             spacing: sp(40), sp(40)
-
-            GridLayout:
-                cols: 3
-                rows: 1
-                size_hint_y: None
-                height: sp(0)
-
-                CitySpinner:
-                    canvas.before:
-                        Color:
-                            rgba: get_color_from_hex('D2D1BE')
-                    id: city_selection
-                    size_hint: None, None
-                    height: sp(30)
-                    width: sp(120)
-                    sync_height: True
-                    halign: 'center'
-                    font_size: sp(15)
-                    text_autoupdate: True
-                Widget:
-                LangSpinner:
-                    canvas.before:
-                        Color:
-                            rgba: get_color_from_hex('D2D1BE')
-                    id: lang_selection
-                    size_hint: None, None
-                    height: sp(30)
-                    width: sp(120)
-                    values: 'Türkçe', 'English'
-                    text_size: self.size
-                    sync_height: True
-                    halign: 'center'
-                    font_size: sp(15)
-                    text_autoupdate: True
-
 
             RoundedLabel:
                 id: today
@@ -640,21 +605,43 @@
                         height: sp(30)
 
             GridLayout:
-                cols: 2
+                cols: 3
                 rows: 1
                 size_hint_y: None
                 height: sp(60)
                 padding: 0, 60, 0, 0
 
-                ResetButton:
-                    text: trans._('Sifirla')
+                SettingsButton:
+                    canvas:
+                        Rectangle:
+                            size: sp(30), sp(30)
+                            pos: self.pos[0] + (self.width - sp(30))/2, self.pos[1] + self.height - sp(30)
+                            source: 'assets/settings.png'
+#                    text: trans._('Ayarlar')
+                    halign: 'center'
+                    height: sp(30)
+                    font_size: sp(15)
+                    padding: 0, 10
+
+                TimesButton:
+                    canvas:
+                        Rectangle:
+                            size: sp(30), sp(30)
+                            pos: self.pos[0] + (self.width - sp(30))/2, self.pos[1] + self.height - sp(30)
+                            source: 'assets/kaaba.png'
+#                    text: trans._('Vakitler')
                     halign: 'center'
                     height: sp(30)
                     font_size: sp(15)
                     padding: 0, 10
 
                 RecordButton:
-                    text: trans._('Kayıtlar')
+                    canvas:
+                        Rectangle:
+                            size: sp(30), sp(30)
+                            pos: self.pos[0] + (self.width - sp(30))/2, self.pos[1] + self.height - sp(30)
+                            source: 'assets/records.png'
+#                    text: trans._('Kayıtlar')
                     halign: 'center'
                     height: sp(30)
                     font_size: sp(15)
@@ -681,7 +668,12 @@
                 height: sp(40)
 
                 BackButton:
-                    text: trans._('Geri')
+                    canvas:
+                        Rectangle:
+                            size: sp(30), sp(30)
+                            pos: self.pos[0] + (self.width - sp(30))/2, self.pos[1] + self.height - sp(30)
+                            source: 'assets/back.png'
+#                    text: trans._('Geri')
                     halign: 'center'
                     size_hint_x: None
                     width: sp(90)
@@ -701,7 +693,20 @@
                     
 
                 NewDateButton:
-                    text: trans._('Kayıt Ekle')
+                    canvas:
+                        Rectangle:
+                            size: sp(25), sp(25)
+                            pos: self.pos[0] + (self.width - sp(25))/2 - 10, self.pos[1] + self.height - sp(25)
+                            source: 'assets/add.png'
+                        Rectangle:
+                            size: sp(25), sp(25)
+                            pos: self.pos[0] + (self.width - sp(25))/2, self.pos[1] + self.height - sp(25) - 5
+                            source: 'assets/add.png'
+                        Rectangle:
+                            size: sp(25), sp(25)
+                            pos: self.pos[0] + (self.width - sp(25))/2 + 10, self.pos[1] + self.height - sp(25) - 10
+                            source: 'assets/add.png'
+#                    text: trans._('Kayıt Ekle')
                     name: 'new_record'
                     halign: 'center'
                     size_hint_x: None
@@ -756,10 +761,15 @@
                             pos: separator2.x, separator2.center_y
                             size: separator2.width - sp(5), 1
                 AddOneDateButton:
+                    canvas:
+                        Rectangle:
+                            size: sp(30), sp(30)
+                            pos: self.pos[0] + (self.width - sp(30))/2, self.pos[1] + self.height - sp(30)
+                            source: 'assets/add.png'
+#                    text: '+'
                     size_hint: None, None
-                    width: sp(25)
+                    width: sp(30)
                     height: sp(30)
-                    text: '+'
                     padding: sp(7), sp(3)
                 
             ScrollView:
@@ -818,3 +828,193 @@
                     spacing: 5, 5
                     size_hint: 1, None
                     height: max(self.minimum_height, scrlv2.height)
+
+    Screen:
+        id: settings
+        name: 'settings'
+        city_selection: city_selection
+        lang_selection: lang_selection
+
+        GridLayout:
+            cols: 1
+            rows: 4
+            padding: 10, 10, 10, 10
+
+            BackButton:
+                canvas:
+                    Rectangle:
+                        size: sp(30), sp(30)
+                        pos: self.pos[0] + (self.width - sp(30))/2, self.pos[1] + self.height - sp(30)
+                        source: 'assets/back.png'
+#                text: trans._('Geri')
+                halign: 'center'
+                size_hint_x: None
+                width: sp(90)
+                height: sp(30)
+                font_size: sp(15)
+                padding: 0, 10
+
+            GridLayout:
+                cols: 2
+                rows: 1
+                size_hint_y: None
+                height: sp(30)
+
+                Label:
+                    text: trans._('Şehir')
+                    padding: 20, 15
+                    text_size: self.size
+                    color: get_color_from_hex('#000000')
+                    halign: 'left'
+                    valign: 'center'
+
+                CitySpinner:
+                    canvas.before:
+                        Color:
+                            rgba: get_color_from_hex('D2D1BE')
+                    id: city_selection
+                    size_hint: None, None
+                    height: sp(30)
+                    width: sp(120)
+                    sync_height: True
+                    halign: 'center'
+                    font_size: sp(15)
+                    text_autoupdate: True
+
+            GridLayout:
+                cols: 2
+                rows: 1
+                size_hint_y: None
+                height: sp(30)
+
+                Label:
+                    text: trans._('Dil')
+                    padding: 20, 15
+                    text_size: self.size
+                    color: get_color_from_hex('#000000')
+                    halign: 'left'
+                    valign: 'center'
+
+                LangSpinner:
+                    canvas.before:
+                        Color:
+                            rgba: get_color_from_hex('D2D1BE')
+                    id: lang_selection
+                    size_hint: None, None
+                    height: sp(30)
+                    width: sp(120)
+                    values: 'Türkçe', 'English'
+                    text_size: self.size
+                    sync_height: True
+                    halign: 'center'
+                    font_size: sp(15)
+                    text_autoupdate: True
+
+            ResetButton:
+                text: trans._('Sifirla')
+                halign: 'center'
+                height: sp(30)
+                font_size: sp(15)
+                padding: 0, 10
+
+
+    Screen:
+        id: praying_times
+        name: 'praying_times'
+        sabah_time: sabah_time
+        ogle_time: ogle_time
+        ikindi_time: ikindi_time
+        aksam_time: aksam_time
+        yatsi_time: yatsi_time
+        vitr_time: vitr_time
+
+        GridLayout:
+            cols: 1
+            rows: 2
+            padding: 10, 10, 10, 10
+
+            BackButton:
+                canvas:
+                    Rectangle:
+                        size: sp(30), sp(30)
+                        pos: self.pos[0] + (self.width - sp(30))/2, self.pos[1] + self.height - sp(30)
+                        source: 'assets/back.png'
+#                text: trans._('Geri')
+                halign: 'center'
+                size_hint_x: None
+                width: sp(90)
+                height: sp(30)
+                font_size: sp(15)
+                padding: 0, 10
+
+            GridLayout:
+                cols: 2
+                rows: 7
+                size_hint_y: None
+                height: sp(30)
+
+                RoundedLabel:
+                    text: trans._('Sabah')
+                    font_size: '15sp'
+                    padding: 20, 20
+
+                RoundedLabel:
+                    id: sabah_time
+                    text: ''
+                    font_size: '15sp'
+                    padding: 20, 20
+
+                RoundedLabel:
+                    text: trans._('Ogle')
+                    font_size: '15sp'
+                    padding: 20, 20
+
+                RoundedLabel:
+                    id: ogle_time
+                    text: ''
+                    font_size: '15sp'
+                    padding: 20, 20
+
+                RoundedLabel:
+                    text: trans._('Ikindi')
+                    font_size: '15sp'
+                    padding: 20, 20
+
+                RoundedLabel:
+                    id: ikindi_time
+                    text: ''
+                    font_size: '15sp'
+                    padding: 20, 20
+
+                RoundedLabel:
+                    text: trans._('Aksam')
+                    font_size: '15sp'
+                    padding: 20, 20
+
+                RoundedLabel:
+                    id: aksam_time
+                    text: ''
+                    font_size: '15sp'
+                    padding: 20, 20
+
+                RoundedLabel:
+                    text: trans._('Yatsi')
+                    font_size: '15sp'
+                    padding: 20, 20
+
+                RoundedLabel:
+                    id: yatsi_time
+                    text: ''
+                    font_size: '15sp'
+                    padding: 20, 20
+
+                RoundedLabel:
+                    text: trans._('Vitr')
+                    font_size: '15sp'
+                    padding: 20, 20
+
+                RoundedLabel:
+                    id: vitr_time
+                    text: ''
+                    font_size: '15sp'
+                    padding: 20, 20

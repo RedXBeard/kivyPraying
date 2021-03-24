@@ -1,6 +1,8 @@
 from datetime import datetime, timedelta
 from urllib.error import HTTPError
 
+from colour import Color
+from dateutil.relativedelta import relativedelta
 from kivy.animation import Animation
 from kivy.app import App
 from kivy.clock import Clock
@@ -24,6 +26,10 @@ from config import find_parent, set_children_color, seconds_converter, set_color
 from language import Lang
 from models import City, Time, Status, Language, Reward
 from providers import Heroku, CollectApi
+from raw_sql import full_prayed_dates
+
+# compass.enable()
+# print('hop', compass.field())
 
 trans = Lang('en')
 
@@ -150,6 +156,20 @@ class RecordButton(ButtonBehavior, RoundedLabel):
         root.load_more_records()
 
 
+class SettingsButton(ButtonBehavior, RoundedLabel):
+    def on_press(self):
+        root = find_parent(self, Praying)
+        root.transition = SlideTransition(direction='left')
+        root.current = 'settings'
+
+
+class TimesButton(ButtonBehavior, RoundedLabel):
+    def on_press(self):
+        root = find_parent(self, Praying)
+        root.transition = SlideTransition(direction='left')
+        root.current = 'praying_times'
+
+
 class BackButton(ButtonBehavior, RoundedLabel):
     def on_press(self):
         root = find_parent(self, Praying)
@@ -157,7 +177,7 @@ class BackButton(ButtonBehavior, RoundedLabel):
         root.current = 'entrance'
 
 
-class AddOneDateButton(ButtonBehavior, RoundedLabel):
+class AddOneDateButton(ButtonBehavior, Label):
     def on_press(self):
         root = find_parent(self, Praying)
         statuses = sorted(Status.list(), key=lambda x: x.date)
@@ -347,6 +367,7 @@ class Praying(ScreenManager):
         )
 
         self.reward_success()
+        # self.call = 0
 
     def progressbar_path(self, path=None, per_step=0):
         path = path or []
@@ -370,23 +391,19 @@ class Praying(ScreenManager):
         monthly = Reward.get(name='monthly')
         yearly = Reward.get(name='yearly')
 
-        shown = daily.count + weekly.count * 7 + monthly.count * 30 + yearly.count * 365
-        statuses = Status.list(is_prayed=True)
-        if shown == len(statuses):
-            Clock.schedule_once(lambda dt: self.reward_success(), .5)
-            return
-
-        tmp = {}
-        for status in statuses:
-            tmp.setdefault(status.date, 0)
-            tmp[status.date] += 1
-
-        count = len(list(filter(lambda x: x == 6, tmp.values())))
-
-        calc_yearly, count = int(count / 365), count % 365
-        calc_monthly, count = int(count / 28), count % 28
-        calc_weekly, count = int(count / 7), count % 7
-        calc_daily = count
+        try:
+            start_date = full_prayed_dates(min_date=True)
+            end_date = full_prayed_dates(max_date=True)
+            time_difference = relativedelta(end_date, start_date)
+            calc_yearly = time_difference.years
+            calc_monthly = time_difference.months
+            calc_weekly = int(time_difference.days / 7)
+            calc_daily = time_difference.days % 7
+        except TypeError:
+            calc_yearly = 0
+            calc_monthly = 0
+            calc_weekly = 0
+            calc_daily = 0
 
         stars = []
         if calc_yearly > yearly.count:
@@ -429,7 +446,7 @@ class Praying(ScreenManager):
 
     def fetch_selected_city(self):
         self.city = fetch_selected_city()
-        self.entrance.city_selection.set_text()
+        self.settings.city_selection.set_text()
 
     def fetch_today_praying_times(self):
         record = {}
@@ -450,6 +467,28 @@ class Praying(ScreenManager):
                             date=self.today)
 
         self.times = Time.list(date=self.today, city_id=city.pk)
+
+        self.check_praying_time_left()
+
+    def check_praying_time_left(self):
+        now = datetime.now()
+        # now = datetime(2021, 3, 24, 14) + timedelta(seconds=self.call * 60)
+        from_color = Color('#B8D5CD')
+        to_color = Color('#FF6666')
+        for praying_time_name in ['sabah', 'ogle', 'ikindi', 'aksam', 'yatsi', 'vitr']:
+            praying_time_obj = list(filter(lambda x: x.time_name == praying_time_name, self.times))[0]
+            praying_time = praying_time_obj.from_time
+            label = getattr(self.praying_times, '{}_time'.format(praying_time_name))
+            label.text = praying_time.strftime('%H:%M')
+
+            if praying_time_obj.from_time <= now <= praying_time_obj.to_time:
+                frame = int((praying_time_obj.to_time - praying_time_obj.from_time).total_seconds() / 60)
+                index = int((now - praying_time_obj.from_time).total_seconds() / 60) - 1
+                color_set = list(from_color.range_to(to_color, frame))
+                current_hex = color_set[index].get_hex().strip('#')
+                set_color(label, get_color_from_hex(current_hex))
+        # self.call += 1
+        Clock.schedule_once(lambda dt: self.check_praying_time_left(), 10)
 
     def check_praying_status(self):
         if not Status.get(date=self.today):
@@ -513,9 +552,14 @@ class Praying(ScreenManager):
             d1 = visits and visits[0] or datetime.now()
             d2 = visits and visits[-1] or datetime.now()
             days = set([d1 + timedelta(n) for n in range(1, int((d2 - d1).days))])
+            chunks = []
             for day in days.difference(set(visits)):
                 for time in times:
-                    Status.create(time_name=time, date=day, is_prayed=is_prayed)
+                    chunks.append(
+                        dict(time_name=time, date=day, is_prayed=is_prayed)
+                    )
+            if chunks:
+                Status.create_bulk(chunks=chunks)
 
             for status in Status.list(is_prayed=False):
                 if status.date == self.today:
@@ -628,7 +672,7 @@ class Praying(ScreenManager):
         for language in Language.list():
             selected = language.lang == lang
             Language.update(language, selected=selected)
-        self.entrance.lang_selection.set_text()
+        self.settings.lang_selection.set_text()
 
 
 class PrayingApp(App):
