@@ -28,7 +28,10 @@ class SQLiteStore:
                 continue
 
             value = kwargs.get(key)
-            if attr_type in (date, datetime, str):
+            if value is None:
+                where_clause.append('{} is null'.format(key))
+                continue
+            elif attr_type in (date, datetime, str):
                 value = "'{}'".format(value)
             elif attr_type == bool:
                 value = bool(value)

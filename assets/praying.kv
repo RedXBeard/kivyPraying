@@ -832,12 +832,13 @@
     Screen:
         id: settings
         name: 'settings'
+        country_selection: country_selection
         city_selection: city_selection
         lang_selection: lang_selection
 
         GridLayout:
             cols: 1
-            rows: 4
+            rows: 5
             padding: 10, 10, 10, 10
 
             BackButton:
@@ -853,6 +854,33 @@
                 height: sp(30)
                 font_size: sp(15)
                 padding: 0, 10
+
+            GridLayout:
+                cols: 2
+                rows: 1
+                size_hint_y: None
+                height: sp(30)
+
+                Label:
+                    text: trans._('Ulke')
+                    padding: 20, 15
+                    text_size: self.size
+                    color: get_color_from_hex('#000000')
+                    halign: 'left'
+                    valign: 'center'
+
+                CountrySpinner:
+                    canvas.before:
+                        Color:
+                            rgba: get_color_from_hex('D2D1BE')
+                    id: country_selection
+                    size_hint: None, None
+                    height: sp(30)
+                    width: sp(120)
+                    sync_height: True
+                    halign: 'center'
+                    font_size: sp(15)
+                    text_autoupdate: True
 
             GridLayout:
                 cols: 2

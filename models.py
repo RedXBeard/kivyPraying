@@ -7,8 +7,10 @@ class ModelBase:
     def __init__(self, **kwargs):
         for key, value in kwargs.items():
             annotation = self.__annotations__.get(key)
-            if annotation == date:
-                value = datetime.strptime(value, '%Y-%m-%d').date()
+            if value is None:
+                value = None
+            elif annotation == date:
+                value = value and datetime.strptime(value, '%Y-%m-%d').date()
             elif annotation == datetime:
                 value = datetime.strptime(value, '%d.%m.%Y %H:%M')
             elif annotation == bool:
@@ -43,12 +45,24 @@ class ModelBase:
         return SQLiteDB.delete(cls, **kwargs)
 
 
+class Country(ModelBase):
+    pk: int
+    name: str
+    country_key: str
+    id: int
+    selected: bool
+
+    class Meta:
+        db_name = 'countries'
+
+
 class City(ModelBase):
     pk: int
     name: str
     city_key: str
     id: int
     selected: bool
+    country_id: int
 
     class Meta:
         db_name = 'cities'

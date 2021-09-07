@@ -1,7 +1,7 @@
 from datetime import datetime
 from urllib.error import HTTPError
 
-from models import City
+from models import City, Country
 
 
 def find_parent(cur_class, target_class):
@@ -58,26 +58,60 @@ def seconds_converter(scnds):
     return list(map(lambda x: str(x).zfill(2), map(int, [hours, minutes, seconds])))
 
 
-def fetch_cities():
+def fetch_countries():
     from providers import Heroku
 
-    cities = City.list()
+    counties = Country.list()
+    if not counties:
+        try:
+            countries = Heroku().fetch_countries()
+        except HTTPError:
+            countries = []
+
+        for country in countries:
+            Country.create(name=country['name'], country_key=country['key'], id=country['id'])
+    counties = Country.list()
+    return counties
+
+
+def fetch_cities():
+    from providers import Heroku
+    # print(list(map(lambda x: x.name, Country.list())))
+    country = Country.get(selected=True)
+    cities = City.list(country_id=country.id)
+
     if not cities:
         try:
-            cities = Heroku().fetch_cities(2)
+            cities = Heroku().fetch_cities(country.id)
         except HTTPError:
             cities = []
 
         for city in cities:
-            City.create(name=city['name'], city_key=city['key'], id=city['id'])
-    cities = City.list()
+            City.create(name=city['name'], city_key=city['key'], id=city['id'], country_id=country.id)
+
+    for city in City.list(country_id=None):
+        City.update(city, country_id=country.pk)
+
+    cities = City.list(country_id=country.id)
     return cities
+
+
+def fetch_selected_country():
+    country = Country.get(selected=True)
+    if not country:
+        country = Country.get(country_key='turkey')
+        for db_country in Country.list():
+            selected = db_country.pk == country.pk
+            Country.update(db_country, selected=selected)
+
+    return country
 
 
 def fetch_selected_city():
     city = City.get(selected=True)
     if not city:
-        city = City.get(city_key='istanbul')
+        country = Country.get(selected=True)
+        city = City.list(country_id=country.id)[0]
         for db_city in City.list():
             selected = db_city.pk == city.pk
             City.update(db_city, selected=selected)
@@ -95,7 +129,7 @@ def _datetime_parser(rec):
 
 def _concat_date_time(time, date):
     date = '{}.{}.{}'.format(date.day, date.month, date.year)
-    return '{} {}'.format(date, time)
+    return '{} {}'.format(date, time.split(' ')[0])
 
 
 COLOR_CODES = {

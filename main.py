@@ -22,14 +22,11 @@ from kivy.uix.widget import Widget
 from kivy.utils import get_color_from_hex
 
 from config import find_parent, set_children_color, seconds_converter, set_color, fetch_selected_city, fetch_cities, \
-    COLOR_CODES
+    fetch_countries, COLOR_CODES, fetch_selected_country
 from language import Lang
 from models import City, Time, Status, Language, Reward
-from providers import Heroku, CollectApi
+from providers import Heroku, CollectApi, AladhanApi
 from raw_sql import full_prayed_dates
-
-# compass.enable()
-# print('hop', compass.field())
 
 trans = Lang('en')
 
@@ -352,10 +349,13 @@ class Praying(ScreenManager):
         self.year = self.today.year
         self.weekday = self.today.weekday()
         self.times = None
+        self.country = None
         self.city = None
 
         self.progressbar_path(
             path=list(reversed([
+                self.fetch_countries,
+                self.fetch_selected_country,
                 self.fetch_cities,
                 self.fetch_selected_city,
                 self.fetch_today_praying_times,
@@ -441,12 +441,28 @@ class Praying(ScreenManager):
         self.current = 'welcome'
 
     @staticmethod
+    def fetch_countries():
+        # from models import Time, Country, City
+        # Time.delete()
+        # Country.delete()
+        # City.delete()
+
+        fetch_countries()
+
+    @staticmethod
     def fetch_cities():
         fetch_cities()
+
+    def fetch_selected_country(self):
+        self.country = fetch_selected_country()
+        self.settings.country_selection.set_text()
 
     def fetch_selected_city(self):
         self.city = fetch_selected_city()
         self.settings.city_selection.set_text()
+        self.settings.city_selection.values = sorted(
+            list(map(lambda x: x.name, City.list(country_id=self.city.country_id)))
+        )
 
     def fetch_today_praying_times(self):
         record = {}
@@ -454,7 +470,7 @@ class Praying(ScreenManager):
         times = Time.list(date=self.today, city_id=city.pk)
 
         if not times:
-            for provider in (Heroku(), CollectApi()):
+            for provider in (AladhanApi(), Heroku(), CollectApi()):
                 try:
                     record = provider(self.today, self.city)
                     break
@@ -687,6 +703,8 @@ class PrayingApp(App):
             trans.switch_lang(lang)
         except AttributeError:
             pass
+        fetch_countries()
+        fetch_selected_country()
         fetch_cities()
         fetch_selected_city()
         return Praying()

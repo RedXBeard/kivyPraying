@@ -7,7 +7,7 @@ from kivy.utils import get_color_from_hex
 
 from config import set_children_color, find_parent
 from main import trans, RoundedLabel
-from models import Language, City
+from models import Language, City, Country
 
 
 class SpinnerOption(ButtonBehavior, RoundedLabel):
@@ -127,7 +127,8 @@ class LangSpinner(CustomSpinner):
 class CitySpinner(CustomSpinner):
     def __init__(self, **kwargs):
         super(CitySpinner, self).__init__(**kwargs)
-        self.values = sorted(list(map(lambda x: x.name, City.list())))
+        country = Country.get(selected=True)
+        self.values = sorted(list(map(lambda x: x.name, City.list(country_id=country.id))))
 
     def set_text(self):
         self.text = City.get(selected=True).name
@@ -146,6 +147,44 @@ class CitySpinner(CustomSpinner):
         root.progressbar_path(
             path=list(reversed([
                 root.start_progress,
+                root.fetch_selected_country,
+                root.fetch_selected_city,
+                root.fetch_today_praying_times,
+                root.check_praying_status,
+                root.reset_missed_prays,
+                root.check_missed_prays(),
+            ])),
+            per_step=int(1000 / 6)
+        )
+
+
+class CountrySpinner(CustomSpinner):
+    def __init__(self, **kwargs):
+        super(CountrySpinner, self).__init__(**kwargs)
+        self.values = sorted(list(map(lambda x: x.name, Country.list())))
+
+    def set_text(self):
+        self.text = Country.get(selected=True).name
+
+    def _on_dropdown_select(self, instance, data, *largs):
+        from main import Praying
+        super(CountrySpinner, self)._on_dropdown_select(instance=instance, data=data, *largs)
+        root = find_parent(self, Praying)
+
+        for country in Country.list():
+            selected = country.name == data
+            Country.update(country, selected=selected)
+            cities = City.list(selected=True)
+            for city in cities:
+                City.update(city, selected=False)
+
+        root.welcome.progressbar.value = 0
+        country = Country.get(selected=True)
+        root.progressbar_path(
+            path=list(reversed([
+                root.start_progress,
+                root.fetch_selected_country,
+                root.fetch_cities,
                 root.fetch_selected_city,
                 root.fetch_today_praying_times,
                 root.check_praying_status,

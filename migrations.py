@@ -1,5 +1,14 @@
 STATEMENTS = (
     """
+    create table countries (
+        pk integer not null primary key autoincrement,
+        name text,
+        country_key text,
+        id integer,
+        selected boolean
+    )
+    """,
+    """
     create table cities (
         pk integer not null primary key autoincrement,
         name text,
@@ -54,4 +63,5 @@ STATEMENTS = (
     "CREATE INDEX idx_praying_status_isprayed ON praying_status (is_prayed)",
     "CREATE INDEX idx_praying_status_date ON praying_status (date)",
     "CREATE INDEX idx_times_date ON times (date)",
+    "alter table cities add column country_id int"
 )

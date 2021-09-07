@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-22 16:49+0300\n"
+"POT-Creation-Date: 2021-09-07 15:07+0300\n"
 "PO-Revision-Date: 2020-09-19 22:23+0300\n"
 "Last-Translator: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
 "Language-Team: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
@@ -109,70 +109,69 @@ msgstr "Saturday"
 msgid "Pazar"
 msgstr "Sunday"
 
-#: assets/praying.kv:272 assets/praying.kv:445 assets/praying.kv:909
+#: assets/praying.kv:272 assets/praying.kv:445 assets/praying.kv:985
 msgid "Sabah"
 msgstr "Fajr"
 
-#: assets/praying.kv:287 assets/praying.kv:474 assets/praying.kv:920
+#: assets/praying.kv:287 assets/praying.kv:474 assets/praying.kv:996
 msgid "Ogle"
 msgstr "Zuhr"
 
-#: assets/praying.kv:302 assets/praying.kv:503 assets/praying.kv:931
+#: assets/praying.kv:302 assets/praying.kv:503 assets/praying.kv:1007
 msgid "Ikindi"
 msgstr "Asr"
 
-#: assets/praying.kv:317 assets/praying.kv:532 assets/praying.kv:942
+#: assets/praying.kv:317 assets/praying.kv:532 assets/praying.kv:1018
 msgid "Aksam"
 msgstr "Maghrib"
 
-#: assets/praying.kv:332 assets/praying.kv:561 assets/praying.kv:953
+#: assets/praying.kv:332 assets/praying.kv:561 assets/praying.kv:1029
 msgid "Yatsi"
 msgstr "Isha"
 
-#: assets/praying.kv:347 assets/praying.kv:590 assets/praying.kv:964
+#: assets/praying.kv:347 assets/praying.kv:590 assets/praying.kv:1040
 msgid "Vitr"
 msgstr "Vitor"
 
-#: assets/praying.kv:615
-msgid "Ayarlar"
-msgstr "Settings"
-
-#: assets/praying.kv:622
-msgid "Vakitler"
-msgstr "Praying Times"
-
-#: assets/praying.kv:629
-msgid "Kayıtlar"
-msgstr "Records"
-
-#: assets/praying.kv:656 assets/praying.kv:806 assets/praying.kv:894
-msgid "Geri"
-msgstr "Back"
-
-#: assets/praying.kv:666
+#: assets/praying.kv:686
 msgid "İlk Kayıt"
 msgstr "First Record"
 
-#: assets/praying.kv:676
-msgid "Kayıt Ekle"
-msgstr "Add Record"
-
-#: assets/praying.kv:710
+#: assets/praying.kv:743
 msgid "Eksikler"
 msgstr "Missing"
 
-#: assets/praying.kv:763
+#: assets/praying.kv:801
 msgid "Tümü"
 msgstr "Complete"
 
-#: assets/praying.kv:821
+#: assets/praying.kv:865
+msgid "Ulke"
+msgstr "Country"
+
+#: assets/praying.kv:892
 msgid "Şehir"
 msgstr "City"
 
-#: assets/praying.kv:848
+#: assets/praying.kv:919
 msgid "Dil"
 msgstr "Language"
 
-#: assets/praying.kv:871
+#: assets/praying.kv:942
 msgid "Sifirla"
 msgstr "Reset"
+
+#~ msgid "Ayarlar"
+#~ msgstr "Settings"
+
+#~ msgid "Vakitler"
+#~ msgstr "Praying Times"
+
+#~ msgid "Kayıtlar"
+#~ msgstr "Records"
+
+#~ msgid "Geri"
+#~ msgstr "Back"
+
+#~ msgid "Kayıt Ekle"
+#~ msgstr "Add Record"
