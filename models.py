@@ -10,9 +10,9 @@ class ModelBase:
             if value is None:
                 value = None
             elif annotation == date:
-                value = value and datetime.strptime(value, '%Y-%m-%d').date()
+                value = value and datetime.strptime(value, "%Y-%m-%d").date()
             elif annotation == datetime:
-                value = datetime.strptime(value, '%d.%m.%Y %H:%M')
+                value = datetime.strptime(value, "%d.%m.%Y %H:%M")
             elif annotation == bool:
                 value = bool(value)
             elif annotation == int:
@@ -53,7 +53,7 @@ class Country(ModelBase):
     selected: bool
 
     class Meta:
-        db_name = 'countries'
+        db_name = "countries"
 
 
 class City(ModelBase):
@@ -65,7 +65,7 @@ class City(ModelBase):
     country_id: int
 
     class Meta:
-        db_name = 'cities'
+        db_name = "cities"
 
 
 class Time(ModelBase):
@@ -77,7 +77,7 @@ class Time(ModelBase):
     city_id: int
 
     class Meta:
-        db_name = 'times'
+        db_name = "times"
 
 
 class Status(ModelBase):
@@ -87,7 +87,7 @@ class Status(ModelBase):
     date: date
 
     class Meta:
-        db_name = 'praying_status'
+        db_name = "praying_status"
 
 
 class Language(ModelBase):
@@ -97,7 +97,7 @@ class Language(ModelBase):
     selected: bool
 
     class Meta:
-        db_name = 'languages'
+        db_name = "languages"
 
 
 class Reward(ModelBase):
@@ -106,4 +106,4 @@ class Reward(ModelBase):
     count: int
 
     class Meta:
-        db_name = 'rewards'
+        db_name = "rewards"

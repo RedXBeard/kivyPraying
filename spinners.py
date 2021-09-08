@@ -27,12 +27,12 @@ class CustomSpinner(ButtonBehavior, RoundedLabel):
         super(CustomSpinner, self).__init__(**kwargs)
         fbind = self.fbind
         build_dropdown = self._build_dropdown
-        fbind('on_release', self._toggle_dropdown)
-        fbind('dropdown_cls', build_dropdown)
-        fbind('option_cls', build_dropdown)
-        fbind('values', self._update_dropdown)
-        fbind('size', self._update_dropdown_size)
-        fbind('text_autoupdate', self._update_dropdown)
+        fbind("on_release", self._toggle_dropdown)
+        fbind("dropdown_cls", build_dropdown)
+        fbind("option_cls", build_dropdown)
+        fbind("values", self._update_dropdown)
+        fbind("size", self._update_dropdown_size)
+        fbind("text_autoupdate", self._update_dropdown)
         build_dropdown()
 
     def set_text(self):
@@ -75,18 +75,18 @@ class CustomSpinner(ButtonBehavior, RoundedLabel):
             cls = Factory.get(cls)
         dp.clear_widgets()
         for value in values:
-            item = cls(text=value, font_size=sp(15), halign='center')
+            item = cls(text=value, font_size=sp(15), halign="center")
             item.height = sp(30)  # self.height if self.sync_height else item.height
             item.bind(on_release=lambda option: dp.select(option.text))
             dp.add_widget(item)
-            set_children_color(item.parent, get_color_from_hex('D2D1BE'))
+            set_children_color(item.parent, get_color_from_hex("D2D1BE"))
         self.set_text()
         if text_autoupdate:
             if values:
                 if not self.text or self.text not in values:
                     self.text = values[0]
             else:
-                self.text = ''
+                self.text = ""
 
     def _toggle_dropdown(self, *largs):
         if self.values:
@@ -108,18 +108,23 @@ class CustomSpinner(ButtonBehavior, RoundedLabel):
 
 
 class LangSpinner(CustomSpinner):
-    values_dict = {'Türkçe': 'tr', 'English': 'en'}
+    values_dict = {"Türkçe": "tr", "English": "en"}
 
     def set_text(self):
         try:
             lang = Language.get(selected=True).lang
         except AttributeError:
             lang = trans.lang
-        self.text = dict(list(map(lambda x: list(reversed(list(x))), self.values_dict.items())))[lang]
+        self.text = dict(
+            list(map(lambda x: list(reversed(list(x))), self.values_dict.items()))
+        )[lang]
 
     def _on_dropdown_select(self, instance, data, *largs):
         from main import Praying
-        super(LangSpinner, self)._on_dropdown_select(instance=instance, data=data, *largs)
+
+        super(LangSpinner, self)._on_dropdown_select(
+            instance=instance, data=data, *largs
+        )
         root = find_parent(self, Praying)
         root.switch_lang(self.values_dict.get(data))
 
@@ -128,14 +133,19 @@ class CitySpinner(CustomSpinner):
     def __init__(self, **kwargs):
         super(CitySpinner, self).__init__(**kwargs)
         country = Country.get(selected=True)
-        self.values = sorted(list(map(lambda x: x.name, City.list(country_id=country.id))))
+        self.values = sorted(
+            list(map(lambda x: x.name, City.list(country_id=country.id)))
+        )
 
     def set_text(self):
         self.text = City.get(selected=True).name
 
     def _on_dropdown_select(self, instance, data, *largs):
         from main import Praying
-        super(CitySpinner, self)._on_dropdown_select(instance=instance, data=data, *largs)
+
+        super(CitySpinner, self)._on_dropdown_select(
+            instance=instance, data=data, *largs
+        )
         root = find_parent(self, Praying)
 
         for city in City.list():
@@ -145,16 +155,20 @@ class CitySpinner(CustomSpinner):
         root.welcome.progressbar.value = 0
 
         root.progressbar_path(
-            path=list(reversed([
-                root.start_progress,
-                root.fetch_selected_country,
-                root.fetch_selected_city,
-                root.fetch_today_praying_times,
-                root.check_praying_status,
-                root.reset_missed_prays,
-                root.check_missed_prays(),
-            ])),
-            per_step=int(1000 / 6)
+            path=list(
+                reversed(
+                    [
+                        root.start_progress,
+                        root.fetch_selected_country,
+                        root.fetch_selected_city,
+                        root.fetch_today_praying_times,
+                        root.check_praying_status,
+                        root.reset_missed_prays,
+                        root.check_missed_prays(),
+                    ]
+                )
+            ),
+            per_step=int(1000 / 6),
         )
 
 
@@ -168,7 +182,10 @@ class CountrySpinner(CustomSpinner):
 
     def _on_dropdown_select(self, instance, data, *largs):
         from main import Praying
-        super(CountrySpinner, self)._on_dropdown_select(instance=instance, data=data, *largs)
+
+        super(CountrySpinner, self)._on_dropdown_select(
+            instance=instance, data=data, *largs
+        )
         root = find_parent(self, Praying)
 
         for country in Country.list():
@@ -181,20 +198,24 @@ class CountrySpinner(CustomSpinner):
         root.welcome.progressbar.value = 0
         country = Country.get(selected=True)
         root.progressbar_path(
-            path=list(reversed([
-                root.start_progress,
-                root.fetch_selected_country,
-                root.fetch_cities,
-                root.fetch_selected_city,
-                root.fetch_today_praying_times,
-                root.check_praying_status,
-                root.reset_missed_prays,
-                root.check_missed_prays(),
-            ])),
-            per_step=int(1000 / 6)
+            path=list(
+                reversed(
+                    [
+                        root.start_progress,
+                        root.fetch_selected_country,
+                        root.fetch_cities,
+                        root.fetch_selected_city,
+                        root.fetch_today_praying_times,
+                        root.check_praying_status,
+                        root.reset_missed_prays,
+                        root.check_missed_prays(),
+                    ]
+                )
+            ),
+            per_step=int(1000 / 6),
         )
 
 
 class MonthSpinner(CustomSpinner):
     def set_text(self):
-        return ''
+        return ""

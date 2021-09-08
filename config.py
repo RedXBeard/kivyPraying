@@ -8,10 +8,10 @@ def find_parent(cur_class, target_class):
     """find wanted widget from selected or current one"""
     req_class = cur_class
     while True:
-        cls = str(req_class.__class__).split('.')[1].replace("'>", "")
+        cls = str(req_class.__class__).split(".")[1].replace("'>", "")
         if cls == target_class.__name__:
             break
-        elif cls == 'core':
+        elif cls == "core":
             req_class = None
             break
 
@@ -23,12 +23,20 @@ def get_colors(obj):
     u"""Color of widget returns."""
     obj_colors = []
     try:
-        obj_colors.append(list(filter(lambda x: str(x).find('Color') != -1, obj.canvas.before.children))[0])
+        obj_colors.append(
+            list(
+                filter(lambda x: str(x).find("Color") != -1, obj.canvas.before.children)
+            )[0]
+        )
     except IndexError:
         pass
 
     try:
-        obj_colors.append(list(filter(lambda x: str(x).find('Color') != -1, obj.canvas.after.children))[0])
+        obj_colors.append(
+            list(
+                filter(lambda x: str(x).find("Color") != -1, obj.canvas.after.children)
+            )[0]
+        )
     except IndexError:
         pass
 
@@ -45,7 +53,7 @@ def set_color(obj, color):
 
 
 def set_children_color(obj, color):
-    for child in getattr(obj, 'children', []):
+    for child in getattr(obj, "children", []):
         set_color(child, color)
 
 
@@ -69,13 +77,16 @@ def fetch_countries():
             countries = []
 
         for country in countries:
-            Country.create(name=country['name'], country_key=country['key'], id=country['id'])
+            Country.create(
+                name=country["name"], country_key=country["key"], id=country["id"]
+            )
     counties = Country.list()
     return counties
 
 
 def fetch_cities():
     from providers import Heroku
+
     # print(list(map(lambda x: x.name, Country.list())))
     country = Country.get(selected=True)
     cities = City.list(country_id=country.id)
@@ -87,7 +98,12 @@ def fetch_cities():
             cities = []
 
         for city in cities:
-            City.create(name=city['name'], city_key=city['key'], id=city['id'], country_id=country.id)
+            City.create(
+                name=city["name"],
+                city_key=city["key"],
+                id=city["id"],
+                country_id=country.id,
+            )
 
     for city in City.list(country_id=None):
         City.update(city, country_id=country.pk)
@@ -99,7 +115,7 @@ def fetch_cities():
 def fetch_selected_country():
     country = Country.get(selected=True)
     if not country:
-        country = Country.get(country_key='turkey')
+        country = Country.get(country_key="turkey")
         for db_country in Country.list():
             selected = db_country.pk == country.pk
             Country.update(db_country, selected=selected)
@@ -120,23 +136,23 @@ def fetch_selected_city():
 
 
 def _date_parser(rec):
-    return datetime.strptime(rec, '%d.%m.%Y').date()
+    return datetime.strptime(rec, "%d.%m.%Y").date()
 
 
 def _datetime_parser(rec):
-    return datetime.strptime(rec, '%d.%m.%Y %H:%M')
+    return datetime.strptime(rec, "%d.%m.%Y %H:%M")
 
 
 def _concat_date_time(time, date):
-    date = '{}.{}.{}'.format(date.day, date.month, date.year)
-    return '{} {}'.format(date, time.split(' ')[0])
+    date = "{}.{}.{}".format(date.day, date.month, date.year)
+    return "{} {}".format(date, time.split(" ")[0])
 
 
 COLOR_CODES = {
-    'yellow': (240 / 255.0, 201 / 255.0, 117 / 255.0, 1),
-    'orange': (237 / 255.0, 165 / 255.0, 108 / 255.0, 1),
-    'red': (218 / 255.0, 130 / 255.0, 119 / 255.0, 1),
-    'purple': (176 / 255.0, 112 / 255.0, 193 / 255.0, 1),
-    'blue': (131 / 255.0, 168 / 255.0, 240 / 255.0, 1),
-    'green': (125 / 255.0, 182 / 255.0, 140 / 255.0, 1)
+    "yellow": (240 / 255.0, 201 / 255.0, 117 / 255.0, 1),
+    "orange": (237 / 255.0, 165 / 255.0, 108 / 255.0, 1),
+    "red": (218 / 255.0, 130 / 255.0, 119 / 255.0, 1),
+    "purple": (176 / 255.0, 112 / 255.0, 193 / 255.0, 1),
+    "blue": (131 / 255.0, 168 / 255.0, 240 / 255.0, 1),
+    "green": (125 / 255.0, 182 / 255.0, 140 / 255.0, 1),
 }
