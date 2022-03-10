@@ -690,7 +690,7 @@
                     padding: 0, 10
                     color: get_color_from_hex('#000000')
                     font_size: sp(10)
-                    
+
 
                 NewDateButton:
                     canvas:
@@ -714,7 +714,7 @@
                     height: sp(30)
                     font_size: sp(15)
                     padding: 0, 10
-            
+
             BoxLayout:
                 id: stars
                 orientation: 'horizontal'
@@ -722,7 +722,7 @@
                 size_hint: 1, None
                 height: sp(35)
                 spacing: sp(20)
-            
+
             BoxLayout:
                 orientation: 'horizontal'
                 size_hint_y: None
@@ -771,7 +771,7 @@
                     width: sp(30)
                     height: sp(30)
                     padding: sp(7), sp(3)
-                
+
             ScrollView:
                 id: scrlv1
                 on_scroll_stop: root.load_more_missed_records()
@@ -818,7 +818,7 @@
                         Rectangle:
                             pos: separator4.x, separator4.center_y
                             size: separator4.width, 1
-                
+
             ScrollView:
                 id: scrlv2
                 on_scroll_stop: root.load_more_records()
@@ -838,7 +838,7 @@
 
         GridLayout:
             cols: 1
-            rows: 5
+            rows: 6
             padding: 10, 10, 10, 10
 
             BackButton:
@@ -937,6 +937,28 @@
                     halign: 'center'
                     font_size: sp(15)
                     text_autoupdate: True
+
+            GridLayout:
+                cols: 2
+                rows: 1
+                size_hint_y: None
+                height: sp(30)
+
+                Label:
+                    text: trans._('Uygulama Boyutu')
+                    padding: 20, 15
+                    text_size: self.size
+                    color: get_color_from_hex('#000000')
+                    halign: 'left'
+                    valign: 'center'
+
+                Label:
+                    text: root.app_size
+                    padding: 20, 15
+                    text_size: self.size
+                    color: get_color_from_hex('#000000')
+                    halign: 'right'
+                    valign: 'center'
 
             ResetButton:
                 text: trans._('Sifirla')

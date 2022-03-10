@@ -36,24 +36,45 @@ class Heroku(BaseProvider):
     @staticmethod
     def fetch_cities(country):
         f = urllib.request.urlopen(
-            "http://ezanvakti.herokuapp.com/sehirler/{}".format(country)
+            f"http://ezanvakti.herokuapp.com/sehirler/{country.id}"
         )
         data = json.loads(f.read().decode("utf-8"))
         record = []
-        for rec in data:
-            record.append(
-                {
-                    "name": rec["SehirAdi"].capitalize(),
-                    "key": rec["SehirAdiEn"].lower(),
-                    "id": rec["SehirID"],
-                }
+
+        if len(data) == 1:
+            city_id = data[0]['SehirID']
+            f = urllib.request.urlopen(
+                f"http://ezanvakti.herokuapp.com/ilceler/{city_id}"
             )
+            data = json.loads(f.read().decode("utf-8"))
+
+            for rec in data:
+                record.append(
+                    {
+                        "city_id": city_id,
+                        "name": rec["IlceAdi"].capitalize(),
+                        "key": rec["IlceAdiEn"].lower(),
+                        "id": rec["IlceID"],
+                    }
+                )
+        else:
+            for rec in data:
+                record.append(
+                    {
+                        "name": rec["SehirAdi"].capitalize(),
+                        "key": rec["SehirAdiEn"].lower(),
+                        "id": rec["SehirID"],
+                    }
+                )
         return record
 
     @staticmethod
-    def fetch_disticts(city):
+    def fetch_districts(city):
+        if city.direct_city_id:
+            return city.id
+
         f = urllib.request.urlopen(
-            "http://ezanvakti.herokuapp.com/ilceler/{}".format(city.id)
+            f"http://ezanvakti.herokuapp.com/ilceler/{city.id}"
         )
         data = json.loads(f.read().decode("utf-8"))
         return list(filter(lambda x: x["IlceAdiEn"].lower() == city.city_key, data))[0][
@@ -61,9 +82,10 @@ class Heroku(BaseProvider):
         ]
 
     def get(self, today, city):
+        tomorrow = today + timedelta(days=1)
         f = urllib.request.urlopen(
             "http://ezanvakti.herokuapp.com/vakitler?ilce={}".format(
-                self.fetch_disticts(city)
+                self.fetch_districts(city)
             )
         )
         data = json.loads(f.read().decode("utf-8"))
@@ -94,11 +116,11 @@ class Heroku(BaseProvider):
             ),
             "yatsi": (
                 _concat_date_time(times["Yatsi"], today),
-                _concat_date_time(next_day["Imsak"], today + timedelta(days=1)),
+                _concat_date_time(next_day["Imsak"], tomorrow),
             ),
             "vitr": (
                 _concat_date_time(times["Yatsi"], today),
-                _concat_date_time(next_day["Imsak"], today + timedelta(days=1)),
+                _concat_date_time(next_day["Imsak"], tomorrow),
             ),
         }
         return record
@@ -112,7 +134,7 @@ class CollectApi(BaseProvider):
         }
 
     def get(self, today, city):
-        next_day = today + timedelta(days=1)
+        tomorrow = today + timedelta(days=1)
         conn = http.client.HTTPSConnection("api.collectapi.com")
         conn.request(
             "GET", "/pray/all?data.city={}".format(city.city_key), headers=self.headers
@@ -140,63 +162,11 @@ class CollectApi(BaseProvider):
             ),
             "yatsi": (
                 _concat_date_time(times["Yatsı"], today),
-                _concat_date_time("00:00", next_day),
+                _concat_date_time("00:00", tomorrow),
             ),
             "vitr": (
                 _concat_date_time(times["Yatsı"], today),
-                _concat_date_time("00:00", next_day),
-            ),
-        }
-        return record
-
-
-class AladhanApi(BaseProvider):
-    @staticmethod
-    def _fetch_times(day, city, country):
-        f = urllib.request.urlopen(
-            f"https://api.aladhan.com/v1/calendarByCity?"
-            f"city={city.city_key.replace(' ', '_')}&"
-            f"country={country.country_key.replace(' ', '_')}"
-        )
-
-        return list(
-            filter(
-                lambda x: x["date"]["gregorian"]["date"] == day.strftime("%d-%m-%Y"),
-                json.loads(f.read().decode("utf-8"))["data"],
-            )
-        )[0]["timings"]
-
-    def get(self, today, city):
-        from models import Country
-
-        country = Country.get(id=city.country_id)
-        times = self._fetch_times(today, city, country)
-
-        tomorrow = today + timedelta(days=1)
-        record = {
-            "sabah": (
-                _concat_date_time(times["Fajr"], today),
-                _concat_date_time(times["Sunrise"], today),
-            ),
-            "ogle": (
-                _concat_date_time(times["Dhuhr"], today),
-                _concat_date_time(times["Asr"], today),
-            ),
-            "ikindi": (
-                _concat_date_time(times["Asr"], today),
-                _concat_date_time(times["Sunset"], today),
-            ),
-            "aksam": (
-                _concat_date_time(times["Maghrib"], today),
-                _concat_date_time(times["Isha"], today),
-            ),
-            "yatsi": (
-                _concat_date_time(times["Isha"], today),
-                _concat_date_time(times["Imsak"], tomorrow),
-            ),
-            "vitr": (
-                _concat_date_time(times["Isha"], today),
-                _concat_date_time(times["Imsak"], tomorrow),
+                _concat_date_time("00:00", tomorrow),
             ),
         }
         return record

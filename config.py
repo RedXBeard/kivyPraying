@@ -87,18 +87,18 @@ def fetch_countries():
 def fetch_cities():
     from providers import Heroku
 
-    # print(list(map(lambda x: x.name, Country.list())))
     country = Country.get(selected=True)
     cities = City.list(country_id=country.id)
 
     if not cities:
         try:
-            cities = Heroku().fetch_cities(country.id)
+            cities = Heroku().fetch_cities(country)
         except HTTPError:
             cities = []
 
         for city in cities:
             City.create(
+                direct_city_id=city.get('city_id'),
                 name=city["name"],
                 city_key=city["key"],
                 id=city["id"],

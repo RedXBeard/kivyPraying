@@ -63,6 +63,7 @@ class City(ModelBase):
     id: int
     selected: bool
     country_id: int
+    direct_city_id: int
 
     class Meta:
         db_name = "cities"

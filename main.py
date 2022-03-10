@@ -34,8 +34,9 @@ from config import (
 )
 from language import Lang
 from models import City, Time, Status, Language, Reward
-from providers import Heroku, CollectApi, AladhanApi
+from providers import Heroku, CollectApi
 from raw_sql import full_prayed_dates
+from storage import SQLiteDB
 
 trans = Lang("en")
 
@@ -177,6 +178,7 @@ class RecordButton(ButtonBehavior, RoundedLabel):
 class SettingsButton(ButtonBehavior, RoundedLabel):
     def on_press(self):
         root = find_parent(self, Praying)
+        root.app_size = root.calculate_app_size()
         root.transition = SlideTransition(direction="left")
         root.current = "settings"
 
@@ -378,6 +380,7 @@ class Praying(ScreenManager):
     year = NumericProperty()
     weekday = NumericProperty()
     records = DictProperty()
+    app_size = StringProperty(defaultvalue='0 MB')
 
     def __init__(self, **kwargs):
         super(Praying, self).__init__(**kwargs)
@@ -390,7 +393,7 @@ class Praying(ScreenManager):
         self.times = None
         self.country = None
         self.city = None
-
+        self.app_size = self.calculate_app_size()
         self.progressbar_path(
             path=list(
                 reversed(
@@ -411,6 +414,10 @@ class Praying(ScreenManager):
 
         self.reward_success()
         # self.call = 0
+
+    @staticmethod
+    def calculate_app_size():
+        return "{:.2f} MB".format(SQLiteDB.get_size() * 0.0009765625 * 0.0009765625)
 
     def progressbar_path(self, path=None, per_step=0):
         path = path or []
@@ -485,11 +492,10 @@ class Praying(ScreenManager):
 
     @staticmethod
     def fetch_countries():
-        from models import Time, Country, City
 
-        Time.delete()
-        Country.delete()
-        City.delete()
+        # Time.delete()
+        # Country.delete()
+        # City.delete()
 
         fetch_countries()
 
@@ -514,7 +520,7 @@ class Praying(ScreenManager):
         times = Time.list(date=self.today, city_id=city.pk)
 
         if not times:
-            for provider in (AladhanApi(), Heroku(), CollectApi()):
+            for provider in (Heroku(), CollectApi()):
                 try:
                     record = provider(self.today, self.city)
                     break

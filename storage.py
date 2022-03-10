@@ -147,5 +147,11 @@ class SQLiteStore:
         ))
         self.conn.commit()
 
+    def get_size(self):
+        c = self.conn.cursor()
+        c.execute("SELECT page_count * page_size as size FROM pragma_page_count(), pragma_page_size();")
+        data_set = c.fetchone()
+        return data_set[0]
+
 
 SQLiteDB = SQLiteStore()
