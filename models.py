@@ -68,6 +68,10 @@ class City(ModelBase):
     class Meta:
         db_name = "cities"
 
+    @property
+    def country(self):
+        return Country.get(id=self.country_id)
+
 
 class Time(ModelBase):
     pk: int

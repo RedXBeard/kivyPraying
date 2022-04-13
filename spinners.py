@@ -1,6 +1,7 @@
+from kivy.compat import string_types
 from kivy.factory import Factory
 from kivy.metrics import sp
-from kivy.properties import ListProperty, BooleanProperty, ObjectProperty, string_types
+from kivy.properties import ListProperty, BooleanProperty, ObjectProperty
 from kivy.uix.behaviors import ButtonBehavior
 from kivy.uix.dropdown import DropDown
 from kivy.utils import get_color_from_hex

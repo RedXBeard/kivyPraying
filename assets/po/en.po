@@ -115,7 +115,7 @@ msgstr "Fajr"
 
 #: assets/praying.kv:287 assets/praying.kv:474 assets/praying.kv:1018
 msgid "Ogle"
-msgstr "Zuhr"
+msgstr "Dhuhr"
 
 #: assets/praying.kv:302 assets/praying.kv:503 assets/praying.kv:1029
 msgid "Ikindi"

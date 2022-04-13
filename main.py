@@ -34,7 +34,7 @@ from config import (
 )
 from language import Lang
 from models import City, Time, Status, Language, Reward
-from providers import Heroku, CollectApi
+from providers import Heroku, CollectApi, Aladhan
 from raw_sql import full_prayed_dates
 from storage import SQLiteDB
 
@@ -520,7 +520,7 @@ class Praying(ScreenManager):
         times = Time.list(date=self.today, city_id=city.pk)
 
         if not times:
-            for provider in (Heroku(), CollectApi()):
+            for provider in (Aladhan(), Heroku(), CollectApi(),):
                 try:
                     record = provider(self.today, self.city)
                     break
@@ -774,7 +774,7 @@ class Praying(ScreenManager):
 class PrayingApp(App):
     def __init__(self, **kwargs):
         super(PrayingApp, self).__init__(**kwargs)
-        Builder.load_file("assets/praying.kv")
+        Builder.load_file("assets/praying-2.kv")
         self.title = "Kivy Praying"
 
     def build(self):

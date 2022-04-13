@@ -35,17 +35,13 @@ class Heroku(BaseProvider):
 
     @staticmethod
     def fetch_cities(country):
-        f = urllib.request.urlopen(
-            f"http://ezanvakti.herokuapp.com/sehirler/{country.id}"
-        )
+        f = urllib.request.urlopen(f"http://ezanvakti.herokuapp.com/sehirler/{country.id}")
         data = json.loads(f.read().decode("utf-8"))
         record = []
 
         if len(data) == 1:
-            city_id = data[0]['SehirID']
-            f = urllib.request.urlopen(
-                f"http://ezanvakti.herokuapp.com/ilceler/{city_id}"
-            )
+            city_id = data[0]["SehirID"]
+            f = urllib.request.urlopen(f"http://ezanvakti.herokuapp.com/ilceler/{city_id}")
             data = json.loads(f.read().decode("utf-8"))
 
             for rec in data:
@@ -73,31 +69,25 @@ class Heroku(BaseProvider):
         if city.direct_city_id:
             return city.id
 
-        f = urllib.request.urlopen(
-            f"http://ezanvakti.herokuapp.com/ilceler/{city.id}"
-        )
+        f = urllib.request.urlopen(f"http://ezanvakti.herokuapp.com/ilceler/{city.id}")
         data = json.loads(f.read().decode("utf-8"))
-        return list(filter(lambda x: x["IlceAdiEn"].lower() == city.city_key, data))[0][
-            "IlceID"
-        ]
+        return list(filter(lambda x: x["IlceAdiEn"].lower() == city.city_key, data))[0]["IlceID"]
 
     def get(self, today, city):
         tomorrow = today + timedelta(days=1)
-        f = urllib.request.urlopen(
-            "http://ezanvakti.herokuapp.com/vakitler?ilce={}".format(
-                self.fetch_districts(city)
-            )
-        )
+        f = urllib.request.urlopen("http://ezanvakti.herokuapp.com/vakitler?ilce={}".format(self.fetch_districts(city)))
         data = json.loads(f.read().decode("utf-8"))
-        times = list(
-            filter(lambda x: _date_parser(x["MiladiTarihKisa"]) == today, data)
-        )[0]
+        times = list(filter(lambda x: _date_parser(x["MiladiTarihKisa"]) == today, data))[0]
         next_day = filter(
             lambda x: _date_parser(x["MiladiTarihKisa"]) == today + timedelta(days=1),
             data,
         )
         next_day = list(next_day)[0]
         record = {
+            "imsak": (
+                _concat_date_time(times["İmsak"], today),
+                _concat_date_time(times["İmsak"], today),
+            ),
             "sabah": (
                 _concat_date_time(times["Imsak"], today),
                 _concat_date_time(times["Gunes"], today),
@@ -136,14 +126,18 @@ class CollectApi(BaseProvider):
     def get(self, today, city):
         tomorrow = today + timedelta(days=1)
         conn = http.client.HTTPSConnection("api.collectapi.com")
-        conn.request(
-            "GET", "/pray/all?data.city={}".format(city.city_key), headers=self.headers
-        )
+        conn.request("GET", "/pray/all?data.city={}".format(city.city_key), headers=self.headers)
         res = conn.getresponse()
-        data = json.loads(res.read().decode("utf-8"))["result"]
+        data = json.loads(res.read().decode("utf-8")).get("result")
+        if not data:
+            raise IndexError
         times = dict(list(map(lambda x: list(x.values())[::-1], data)))
 
         record = {
+            "imsak": (
+                _concat_date_time(times["İmsak"], today),
+                _concat_date_time(times["İmsak"], today),
+            ),
             "sabah": (
                 _concat_date_time(times["İmsak"], today),
                 _concat_date_time(times["Güneş"], today),
@@ -167,6 +161,46 @@ class CollectApi(BaseProvider):
             "vitr": (
                 _concat_date_time(times["Yatsı"], today),
                 _concat_date_time("00:00", tomorrow),
+            ),
+        }
+        return record
+
+
+class Aladhan(BaseProvider):
+    def get(self, today, city):
+        tomorrow = today + timedelta(days=1)
+        f = urllib.request.urlopen(
+            f"https://api.aladhan.com/v1/timingsByCity/{today}?city={city.name}&country={city.country.name}"
+        )
+        times = json.loads(f.read().decode("utf-8"))["data"]["timings"]
+        record = {
+            "imsak": (
+                _concat_date_time(times["Imsak"], today),
+                _concat_date_time(times["Fajr"], today),
+            ),
+            "sabah": (
+                _concat_date_time(times["Fajr"], today),
+                _concat_date_time(times["Sunrise"], today),
+            ),
+            "ogle": (
+                _concat_date_time(times["Dhuhr"], today),
+                _concat_date_time(times["Asr"], today),
+            ),
+            "ikindi": (
+                _concat_date_time(times["Asr"], today),
+                _concat_date_time(times["Sunset"], today),
+            ),
+            "aksam": (
+                _concat_date_time(times["Maghrib"], today),
+                _concat_date_time(times["Isha"], today),
+            ),
+            "yatsi": (
+                _concat_date_time(times["Isha"], today),
+                _concat_date_time(times["Imsak"], tomorrow),
+            ),
+            "vitr": (
+                _concat_date_time(times["Isha"], today),
+                _concat_date_time(times["Imsak"], tomorrow),
             ),
         }
         return record

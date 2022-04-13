@@ -162,7 +162,7 @@ msgid "Uygulama Boyutu"
 msgstr ""
 
 #: assets/praying.kv:964
-msgid "Sifirla"
+msgid "Reset"
 msgstr "Sıfırla"
 
 #~ msgid "Geri"
