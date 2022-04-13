@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: 1.0.0\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-09-09 08:58+0300\n"
+"POT-Creation-Date: 2022-04-13 14:18+0100\n"
 "PO-Revision-Date: 2020-09-19 22:23+0300\n"
 "Last-Translator: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
 "Language-Team: Barbaros Ali Yildirim <barbarosaliyildirim@gmail.com>\n"
@@ -162,8 +162,11 @@ msgid "Uygulama Boyutu"
 msgstr "Application Size"
 
 #: assets/praying.kv:964
-msgid "Sıfırla"
-msgstr "Reset"
+msgid "Reset"
+msgstr ""
+
+#~ msgid "Sıfırla"
+#~ msgstr "Reset"
 
 #~ msgid "Ayarlar"
 #~ msgstr "Settings"

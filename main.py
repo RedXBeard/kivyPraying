@@ -574,7 +574,9 @@ class Praying(ScreenManager):
 
         for pray_time in self.times:
             time_name = pray_time.time_name
-            if Status.get(date=self.today, time_name=time_name).is_prayed:  # Prayed
+            if time_name == "imsak":
+                continue
+            elif Status.get(date=self.today, time_name=time_name).is_prayed:  # Prayed
                 button = getattr(self.entrance, time_name)
                 button.active = button.disabled = True
                 set_children_color(button.parent, get_color_from_hex("B8D5CD"))
@@ -774,7 +776,7 @@ class Praying(ScreenManager):
 class PrayingApp(App):
     def __init__(self, **kwargs):
         super(PrayingApp, self).__init__(**kwargs)
-        Builder.load_file("assets/praying-2.kv")
+        Builder.load_file("assets/praying.kv")
         self.title = "Kivy Praying"
 
     def build(self):

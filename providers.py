@@ -1,7 +1,7 @@
 import http.client
 import json
 import ssl
-import urllib.request
+import requests
 from datetime import timedelta
 
 from config import _concat_date_time, _date_parser
@@ -20,8 +20,7 @@ class BaseProvider(object):
 class Heroku(BaseProvider):
     @staticmethod
     def fetch_countries():
-        f = urllib.request.urlopen("http://ezanvakti.herokuapp.com/ulkeler")
-        data = json.loads(f.read().decode("utf-8"))
+        data = requests.get("http://ezanvakti.herokuapp.com/ulkeler").json()
         record = []
         for rec in data:
             record.append(
@@ -35,14 +34,12 @@ class Heroku(BaseProvider):
 
     @staticmethod
     def fetch_cities(country):
-        f = urllib.request.urlopen(f"http://ezanvakti.herokuapp.com/sehirler/{country.id}")
-        data = json.loads(f.read().decode("utf-8"))
+        data = requests.get(f"http://ezanvakti.herokuapp.com/sehirler/{country.id}").json()
         record = []
 
         if len(data) == 1:
             city_id = data[0]["SehirID"]
-            f = urllib.request.urlopen(f"http://ezanvakti.herokuapp.com/ilceler/{city_id}")
-            data = json.loads(f.read().decode("utf-8"))
+            data = requests.get(f"http://ezanvakti.herokuapp.com/ilceler/{city_id}").json()
 
             for rec in data:
                 record.append(
@@ -69,14 +66,12 @@ class Heroku(BaseProvider):
         if city.direct_city_id:
             return city.id
 
-        f = urllib.request.urlopen(f"http://ezanvakti.herokuapp.com/ilceler/{city.id}")
-        data = json.loads(f.read().decode("utf-8"))
+        data = requests.get(f"http://ezanvakti.herokuapp.com/ilceler/{city.id}").json()
         return list(filter(lambda x: x["IlceAdiEn"].lower() == city.city_key, data))[0]["IlceID"]
 
     def get(self, today, city):
         tomorrow = today + timedelta(days=1)
-        f = urllib.request.urlopen("http://ezanvakti.herokuapp.com/vakitler?ilce={}".format(self.fetch_districts(city)))
-        data = json.loads(f.read().decode("utf-8"))
+        data = requests.get(f"http://ezanvakti.herokuapp.com/vakitler?ilce={self.fetch_districts(city)}").json()
         times = list(filter(lambda x: _date_parser(x["MiladiTarihKisa"]) == today, data))[0]
         next_day = filter(
             lambda x: _date_parser(x["MiladiTarihKisa"]) == today + timedelta(days=1),
@@ -169,10 +164,9 @@ class CollectApi(BaseProvider):
 class Aladhan(BaseProvider):
     def get(self, today, city):
         tomorrow = today + timedelta(days=1)
-        f = urllib.request.urlopen(
+        times = requests.get(
             f"https://api.aladhan.com/v1/timingsByCity/{today}?city={city.name}&country={city.country.name}"
-        )
-        times = json.loads(f.read().decode("utf-8"))["data"]["timings"]
+        ).json()["data"]["timings"]
         record = {
             "imsak": (
                 _concat_date_time(times["Imsak"], today),
