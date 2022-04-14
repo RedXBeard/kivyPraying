@@ -23,19 +23,33 @@ class SQLiteStore:
     def _fetch_attr_clause(model, **kwargs):
         where_clause = []
 
+        prep = {}
+        for key, value in kwargs.items():
+            key_parts = key.split("__", 1)
+            field = key_parts[0]
+            ext = ''.join(key_parts[1:])
+
+            prep[field] = {"value": value, "ext": ext}
+
         for key, attr_type in model.__annotations__.items():
-            if key not in kwargs:
+            if key not in prep:
                 continue
 
-            value = kwargs.get(key)
+            value = prep.get(key, {}).get("value")
+            ext = prep.get(key, {}).get("ext")
+
             if value is None:
-                where_clause.append('{} is null'.format(key))
+                where_clause.append(f"{key} is null")
                 continue
             elif attr_type in (date, datetime, str):
-                value = "'{}'".format(value)
+                value = f"'{value}'"
             elif attr_type == bool:
                 value = bool(value)
-            where_clause.append('{}={}'.format(key, value))
+
+            if ext == "ne":
+                where_clause.append(f'{key}<>{value}')
+            else:
+                where_clause.append(f'{key}={value}')
 
         if not where_clause:
             where_clause = ['1=1']

@@ -29,3 +29,10 @@ def full_prayed_dates(max_date=False, min_date=False):
     cursor.execute(sql)
     data = cursor.fetchone()
     return parse(data[0]).date()
+
+
+def check_none():
+    conn = sqlite3.connect(os.path.join(kivy_home_dir, 'kivypraying.sqlite3'))
+    cursor = conn.cursor()
+    cursor.execute("update praying_status set is_prayed=false where is_prayed is null")
+    conn.commit()

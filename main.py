@@ -30,12 +30,12 @@ from config import (
     fetch_cities,
     fetch_countries,
     COLOR_CODES,
-    fetch_selected_country,
+    fetch_selected_country, PRAYER_TIMES,
 )
 from language import Lang
 from models import City, Time, Status, Language, Reward
 from providers import Heroku, CollectApi, Aladhan
-from raw_sql import full_prayed_dates
+from raw_sql import full_prayed_dates, check_none
 from storage import SQLiteDB
 
 trans = Lang("en")
@@ -167,7 +167,7 @@ class RecordButton(ButtonBehavior, RoundedLabel):
 
         for status in statuses:
             root.records.setdefault(status.date, {}).update(
-                {status.time_name: status.is_prayed, "pray_time": str(status.date)}
+                {status.time_name: bool(status.is_prayed), "pray_time": str(status.date)}
             )
 
         root.load_stars()
@@ -202,7 +202,7 @@ class AddOneDateButton(ButtonBehavior, Label):
         root = find_parent(self, Praying)
         statuses = sorted(Status.list(), key=lambda x: x.date)
         day = statuses[0].date - timedelta(days=1)
-        for time_name in ["sabah", "ogle", "ikindi", "aksam", "yatsi", "vitr"]:
+        for time_name in PRAYER_TIMES:
             Status.create(time_name=time_name, date=day)
             root.records.setdefault(day, {}).update(
                 {time_name: False, "pray_time": str(day)}
@@ -329,7 +329,7 @@ class NewDateButton(ButtonBehavior, RoundedLabel):
             set_color(self.day, get_color_from_hex("FF6666"))
             return
 
-        for time in ["sabah", "ogle", "ikindi", "aksam", "yatsi", "vitr"]:
+        for time in PRAYER_TIMES:
             Status.create(date=date, time_name=time, is_prayed=self.prayed.active)
 
         self._refresh(is_prayed=self.prayed.active)
@@ -394,6 +394,7 @@ class Praying(ScreenManager):
         self.country = None
         self.city = None
         self.app_size = self.calculate_app_size()
+        check_none()
         self.progressbar_path(
             path=list(
                 reversed(
@@ -517,7 +518,7 @@ class Praying(ScreenManager):
     def fetch_today_praying_times(self):
         record = {}
         city = City.get(selected=True)
-        times = Time.list(date=self.today, city_id=city.pk)
+        times = Time.list(date=self.today, city_id=city.pk, time_name__ne="imsak")
 
         if not times:
             for provider in (Aladhan(), Heroku(), CollectApi(),):
@@ -535,8 +536,7 @@ class Praying(ScreenManager):
                     to_time=time[1][1],
                     date=self.today,
                 )
-
-        self.times = Time.list(date=self.today, city_id=city.pk)
+        self.times = Time.list(date=self.today, city_id=city.pk, time_name__ne="imsak")
 
         self.check_praying_time_left()
 
@@ -545,7 +545,7 @@ class Praying(ScreenManager):
         # now = datetime(2021, 3, 24, 14) + timedelta(seconds=self.call * 60)
         from_color = Color("#B8D5CD")
         to_color = Color("#FF6666")
-        for praying_time_name in ["sabah", "ogle", "ikindi", "aksam", "yatsi", "vitr"]:
+        for praying_time_name in PRAYER_TIMES:
             praying_time_obj = list(
                 filter(lambda x: x.time_name == praying_time_name, self.times)
             )[0]
@@ -569,14 +569,12 @@ class Praying(ScreenManager):
 
     def check_praying_status(self):
         if not Status.get(date=self.today):
-            for time_name in ["sabah", "ogle", "ikindi", "aksam", "yatsi", "vitr"]:
+            for time_name in PRAYER_TIMES:
                 Status.create(time_name=time_name, date=self.today)
 
         for pray_time in self.times:
             time_name = pray_time.time_name
-            if time_name == "imsak":
-                continue
-            elif Status.get(date=self.today, time_name=time_name).is_prayed:  # Prayed
+            if Status.get(date=self.today, time_name=time_name).is_prayed:  # Prayed
                 button = getattr(self.entrance, time_name)
                 button.active = button.disabled = True
                 set_children_color(button.parent, get_color_from_hex("B8D5CD"))
@@ -677,16 +675,15 @@ class Praying(ScreenManager):
         return inner
 
     def check_counter(self, **kwargs):
-        order = ["sabah", "ogle", "ikindi", "aksam", "yatsi"]
         now = datetime.now()
-        records = Time.list(date=self.today)
+        records = Time.list(date=self.today, time_name__ne="imsak")
         if not records:
             Clock.schedule_once(lambda dt: self.check_counter(), 0.5)
             return
         upcoming = None
         current = None
         total_second = 0
-        for key in order:
+        for key in PRAYER_TIMES:
             record = list(filter(lambda x: x.time_name == key, records))[0]
             if record.from_time < now < record.to_time:
                 current = record.to_time

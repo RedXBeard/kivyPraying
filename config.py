@@ -4,6 +4,9 @@ from urllib.error import HTTPError
 from models import City, Country
 
 
+PRAYER_TIMES = ["sabah", "ogle", "ikindi", "aksam", "yatsi", "vitr"]
+
+
 def find_parent(cur_class, target_class):
     """find wanted widget from selected or current one"""
     req_class = cur_class
