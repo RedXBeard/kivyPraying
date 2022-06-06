@@ -35,4 +35,5 @@ def check_none():
     conn = sqlite3.connect(os.path.join(kivy_home_dir, 'kivypraying.sqlite3'))
     cursor = conn.cursor()
     cursor.execute("update praying_status set is_prayed=false where is_prayed is null")
+    cursor.execute("delete from praying_status where time_name='imsak'")
     conn.commit()

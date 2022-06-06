@@ -518,7 +518,7 @@ class Praying(ScreenManager):
     def fetch_today_praying_times(self):
         record = {}
         city = City.get(selected=True)
-        times = Time.list(date=self.today, city_id=city.pk, time_name__ne="imsak")
+        times = Time.list(date=self.today, city_id=city.pk)
 
         if not times:
             for provider in (Aladhan(), Heroku(), CollectApi(),):
@@ -536,7 +536,7 @@ class Praying(ScreenManager):
                     to_time=time[1][1],
                     date=self.today,
                 )
-        self.times = Time.list(date=self.today, city_id=city.pk, time_name__ne="imsak")
+        self.times = Time.list(date=self.today, city_id=city.pk)
 
         self.check_praying_time_left()
 
@@ -676,7 +676,7 @@ class Praying(ScreenManager):
 
     def check_counter(self, **kwargs):
         now = datetime.now()
-        records = Time.list(date=self.today, time_name__ne="imsak")
+        records = Time.list(date=self.today)
         if not records:
             Clock.schedule_once(lambda dt: self.check_counter(), 0.5)
             return

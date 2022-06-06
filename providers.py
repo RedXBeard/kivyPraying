@@ -79,10 +79,6 @@ class Heroku(BaseProvider):
         )
         next_day = list(next_day)[0]
         record = {
-            "imsak": (
-                _concat_date_time(times["İmsak"], today),
-                _concat_date_time(times["İmsak"], today),
-            ),
             "sabah": (
                 _concat_date_time(times["Imsak"], today),
                 _concat_date_time(times["Gunes"], today),
@@ -129,10 +125,6 @@ class CollectApi(BaseProvider):
         times = dict(list(map(lambda x: list(x.values())[::-1], data)))
 
         record = {
-            "imsak": (
-                _concat_date_time(times["İmsak"], today),
-                _concat_date_time(times["İmsak"], today),
-            ),
             "sabah": (
                 _concat_date_time(times["İmsak"], today),
                 _concat_date_time(times["Güneş"], today),
@@ -168,10 +160,6 @@ class Aladhan(BaseProvider):
             f"https://api.aladhan.com/v1/timingsByCity/{today}?city={city.name}&country={city.country.name}"
         ).json()["data"]["timings"]
         record = {
-            "imsak": (
-                _concat_date_time(times["Imsak"], today),
-                _concat_date_time(times["Fajr"], today),
-            ),
             "sabah": (
                 _concat_date_time(times["Fajr"], today),
                 _concat_date_time(times["Sunrise"], today),
