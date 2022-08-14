@@ -35,7 +35,7 @@ from config import (
 from language import Lang
 from models import City, Time, Status, Language, Reward
 from providers import Heroku, CollectApi, Aladhan
-from raw_sql import full_prayed_dates, check_none
+from raw_sql import full_prayed_dates, check_none, fetch_missing_prays
 from storage import SQLiteDB
 
 trans = Lang("en")
@@ -444,6 +444,8 @@ class Praying(ScreenManager):
         try:
             start_date = full_prayed_dates(min_date=True)
             end_date = full_prayed_dates(max_date=True)
+            missing_between = fetch_missing_prays(start_date, end_date)
+            end_date -= timedelta(days=missing_between)
             time_difference = relativedelta(end_date, start_date)
             calc_yearly = time_difference.years
             calc_monthly = time_difference.months

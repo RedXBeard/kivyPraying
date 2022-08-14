@@ -31,6 +31,22 @@ def full_prayed_dates(max_date=False, min_date=False):
     return parse(data[0]).date()
 
 
+def fetch_missing_prays(start_date, end_date):
+    conn = sqlite3.connect(os.path.join(kivy_home_dir, 'kivypraying.sqlite3'))
+    sql = f"""
+        select date, sum(is_prayed)
+        from praying_status
+        where date >= '{start_date}' and date <= '{end_date}'
+        group by date
+        having sum(is_prayed) < 6
+    """
+
+    cursor = conn.cursor()
+    cursor.execute(sql)
+    data = cursor.fetchall()
+    return len(data)
+
+
 def check_none():
     conn = sqlite3.connect(os.path.join(kivy_home_dir, 'kivypraying.sqlite3'))
     cursor = conn.cursor()
